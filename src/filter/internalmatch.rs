@@ -34,9 +34,9 @@ pub struct InternalMatch {
 }
 
 impl InternalMatch {
-    pub fn new(reverse: bool) -> Self {
+    pub fn new(internal_threshold: f64, reverse: bool) -> Self {
         InternalMatch {
-            internal_threshold: 0.8,
+            internal_threshold: internal_threshold,
             reverse: reverse,
         }
     }
@@ -56,6 +56,56 @@ impl filter::Filter for InternalMatch {
         let test = overhang > (maplen as f64 * self.internal_threshold) as u64;
 
         return if self.reverse { !test } else { test };
+    }
+}
+
+#[cfg(test)]
+mod test {
+
+    use super::*;
+	use filter::Filter;
+
+    lazy_static! {
+        static ref RECORD: io::paf::Record = {
+            io::paf::Record {
+                read_a          : "read_1".to_string(),
+                length_a        : 20000,
+                begin_a         : 500,
+                end_a           : 1000,
+                strand          : '+',
+                read_b          : "read_2".to_string(),
+                length_b        : 20000,
+                begin_b         : 5000,
+                end_b           : 5500,
+                nb_match_base   : 500,
+                nb_base         : 500,
+                mapping_quality : 255,
+                sam_field       : Vec::new(),
+            }
+        }; 
+    }
+
+    #[test]
+    fn positif() {
+        let mut nm = InternalMatch::new(0.8, false);
+        println!("{} {}", nm.run(&RECORD), true);
+
+        assert_eq!(nm.run(&RECORD), true);
+        
+		nm = InternalMatch::new(0.8, true);
+
+        assert_eq!(nm.run(&RECORD), false);
+    }
+
+    #[test]
+    fn negatif() {
+        let mut nm = InternalMatch::new(0.8, false);
+
+        assert_ne!(nm.run(&RECORD), false);
+        
+		nm = InternalMatch::new(0.8, true);
+
+        assert_ne!(nm.run(&RECORD), true);
     }
 }
 

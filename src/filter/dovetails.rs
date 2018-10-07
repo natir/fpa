@@ -28,12 +28,14 @@ use filter;
 /* standard use */
 
 pub struct Dovetails {
+    internal_threshold: f64,
     reverse: bool,
 }
 
 impl Dovetails {
-    pub fn new(reverse: bool) -> Self {
+    pub fn new(internal_threshold: f64, reverse: bool) -> Self {
         Dovetails {
+            internal_threshold: internal_threshold,
             reverse: reverse,
         }
     }
@@ -42,10 +44,59 @@ impl Dovetails {
 impl filter::Filter for Dovetails {
     
     fn run(self: &Self, r: &io::paf::Record) -> bool {
-        let test = !filter::Containment::new(false).run(r);
+        let test = !filter::Containment::new(self.internal_threshold, false).run(r);
 
         return if self.reverse { !test } else { test };
     }
 }
 
+#[cfg(test)]
+mod test {
+
+    use super::*;
+	use filter::Filter;
+
+    lazy_static! {
+        static ref RECORD: io::paf::Record = {
+            io::paf::Record {
+                read_a          : "read_1".to_string(),
+                length_a        : 20000,
+                begin_a         : 15000,
+                end_a           : 20000,
+                strand          : '+',
+                read_b          : "read_2".to_string(),
+                length_b        : 20000,
+                begin_b         : 0,
+                end_b           : 15000,
+                nb_match_base   : 500,
+                nb_base         : 500,
+                mapping_quality : 255,
+                sam_field       : Vec::new(),
+            }
+        }; 
+    }
+
+    #[test]
+    fn positif() {
+        let mut nm = Dovetails::new(0.8, false);
+        println!("{} {}", nm.run(&RECORD), true);
+
+        assert_eq!(nm.run(&RECORD), true);
+        
+		nm = Dovetails::new(0.8, true);
+
+        assert_eq!(nm.run(&RECORD), false);
+    }
+
+    #[test]
+    fn negatif() {
+        let mut nm = Dovetails::new(0.8, false);
+
+        assert_ne!(nm.run(&RECORD), false);
+        
+		nm = Dovetails::new(0.8, true);
+
+        assert_ne!(nm.run(&RECORD), true);
+    }
+}
 

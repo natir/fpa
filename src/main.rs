@@ -221,29 +221,31 @@ fn main() {
 
 fn generate_filters(matches: &ArgMatches) -> Vec<Box<filter::Filter>> {
     let mut filters : Vec<Box<filter::Filter>> = Vec::new();
-    
+   
+    let internal_match_t = matches.value_of("internal-match-threshold").unwrap().parse::<f64>().unwrap();
+
     if matches.is_present("delete_internalmatch") {
-        filters.push(Box::new(filter::InternalMatch::new(false)));
+        filters.push(Box::new(filter::InternalMatch::new(internal_match_t, false)));
     }
     
     if matches.is_present("keep_internalmatch") {
-        filters.push(Box::new(filter::InternalMatch::new(true)));
+        filters.push(Box::new(filter::InternalMatch::new(internal_match_t, true)));
     }
     
     if matches.is_present("delete_containment") {
-        filters.push(Box::new(filter::Containment::new(false)));
+        filters.push(Box::new(filter::Containment::new(internal_match_t, false)));
     }
     
     if matches.is_present("keep_containment") {
-        filters.push(Box::new(filter::Containment::new(true)));
+        filters.push(Box::new(filter::Containment::new(internal_match_t, true)));
     }
     
     if matches.is_present("delete_dovetail") {
-        filters.push(Box::new(filter::Dovetails::new(false)));
+        filters.push(Box::new(filter::Dovetails::new(internal_match_t, false)));
     }
     
     if matches.is_present("keep_dovetail") {
-        filters.push(Box::new(filter::Dovetails::new(true)));
+        filters.push(Box::new(filter::Dovetails::new(internal_match_t, true)));
     }
     
     if matches.is_present("delete_length_lower") {

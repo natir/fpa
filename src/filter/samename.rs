@@ -48,4 +48,53 @@ impl filter::Filter for SameName {
     }
 }
 
+#[cfg(test)]
+mod test {
+
+    use super::*;
+	use filter::Filter;
+
+    lazy_static! {
+        static ref RECORD: io::paf::Record = {
+            io::paf::Record {
+                read_a          : "read_1".to_string(),
+                length_a        : 5000,
+                begin_a         : 0,
+                end_a           : 5000,
+                strand          : '+',
+                read_b          : "read_1".to_string(),
+                length_b        : 20000,
+                begin_b         : 5000,
+                end_b           : 10000,
+                nb_match_base   : 500,
+                nb_base         : 500,
+                mapping_quality : 255,
+                sam_field       : Vec::new(),
+            }
+        }; 
+    }
+
+    #[test]
+    fn positif() {
+        let mut nm = SameName::new(false);
+        println!("{} {}", nm.run(&RECORD), true);
+
+        assert_eq!(nm.run(&RECORD), true);
+        
+		nm = SameName::new(true);
+
+        assert_eq!(nm.run(&RECORD), false);
+    }
+
+    #[test]
+    fn negatif() {
+        let mut nm = SameName::new(false);
+
+        assert_ne!(nm.run(&RECORD), false);
+        
+		nm = SameName::new(true);
+
+        assert_ne!(nm.run(&RECORD), true);
+    }
+}
 

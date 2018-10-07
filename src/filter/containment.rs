@@ -28,12 +28,14 @@ use filter;
 /* standard use */
 
 pub struct Containment {
+    internal_threshold: f64,
     reverse: bool,
 }
 
 impl Containment {
-    pub fn new(reverse: bool) -> Self {
+    pub fn new(internal_threshold: f64, reverse: bool) -> Self {
         Containment {
+            internal_threshold: internal_threshold,
             reverse: reverse,
         }
     }
@@ -44,7 +46,7 @@ impl filter::Filter for Containment {
     fn run(self: &Self, r: &io::paf::Record) -> bool {
         let test: bool;
         
-        match filter::InternalMatch::new(false).run(r) {
+        match filter::InternalMatch::new(self.internal_threshold, false).run(r) {
             true => return if self.reverse { false } else { true },
             false => (),
         };
@@ -98,26 +100,25 @@ mod test {
 
     #[test]
     fn positif() {
-        let mut nm = Containment::new(false);
+        let mut nm = Containment::new(0.8, false);
         println!("{} {}", nm.run(&RECORD), true);
 
         assert_eq!(nm.run(&RECORD), true);
         
-		nm = Containment::new(true);
+		nm = Containment::new(0.8, true);
 
         assert_eq!(nm.run(&RECORD), false);
     }
 
     #[test]
     fn negatif() {
-        let mut nm = Containment::new(false);
+        let mut nm = Containment::new(0.8, false);
 
         assert_ne!(nm.run(&RECORD), false);
         
-		nm = Containment::new(true);
+		nm = Containment::new(0.8, true);
 
         assert_ne!(nm.run(&RECORD), true);
     }
-
 }
 

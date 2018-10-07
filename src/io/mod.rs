@@ -21,3 +21,4 @@ SOFTWARE.
 */
 
 pub mod paf;
+pub mod mhap;
