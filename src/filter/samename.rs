@@ -41,8 +41,8 @@ impl SameName {
 
 impl filter::Filter for SameName {
 
-    fn run(self: &Self, r: &io::paf::Record) -> bool {
-        let test = r.read_a == r.read_b;
+    fn run(self: &Self, r: &io::MappingRecord) -> bool {
+        let test = r.read_a() == r.read_b();
 
         return if self.reverse { !test } else { test };
     }
@@ -77,24 +77,24 @@ mod test {
     #[test]
     fn positif() {
         let mut nm = SameName::new(false);
-        println!("{} {}", nm.run(&RECORD), true);
+        println!("{} {}", nm.run(&*RECORD), true);
 
-        assert_eq!(nm.run(&RECORD), true);
+        assert_eq!(nm.run(&*RECORD), true);
         
 		nm = SameName::new(true);
 
-        assert_eq!(nm.run(&RECORD), false);
+        assert_eq!(nm.run(&*RECORD), false);
     }
 
     #[test]
     fn negatif() {
         let mut nm = SameName::new(false);
 
-        assert_ne!(nm.run(&RECORD), false);
+        assert_ne!(nm.run(&*RECORD), false);
         
 		nm = SameName::new(true);
 
-        assert_ne!(nm.run(&RECORD), true);
+        assert_ne!(nm.run(&*RECORD), true);
     }
 }
 

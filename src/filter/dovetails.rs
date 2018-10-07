@@ -43,7 +43,7 @@ impl Dovetails {
 
 impl filter::Filter for Dovetails {
     
-    fn run(self: &Self, r: &io::paf::Record) -> bool {
+    fn run(self: &Self, r: &io::MappingRecord) -> bool {
         let test = !filter::Containment::new(self.internal_threshold, false).run(r);
 
         return if self.reverse { !test } else { test };
@@ -79,24 +79,23 @@ mod test {
     #[test]
     fn positif() {
         let mut nm = Dovetails::new(0.8, false);
-        println!("{} {}", nm.run(&RECORD), true);
 
-        assert_eq!(nm.run(&RECORD), true);
+        assert_eq!(nm.run(&*RECORD), true);
         
 		nm = Dovetails::new(0.8, true);
 
-        assert_eq!(nm.run(&RECORD), false);
+        assert_eq!(nm.run(&*RECORD), false);
     }
 
     #[test]
     fn negatif() {
         let mut nm = Dovetails::new(0.8, false);
 
-        assert_ne!(nm.run(&RECORD), false);
+        assert_ne!(nm.run(&*RECORD), false);
         
 		nm = Dovetails::new(0.8, true);
 
-        assert_ne!(nm.run(&RECORD), true);
+        assert_ne!(nm.run(&*RECORD), true);
     }
 }
 

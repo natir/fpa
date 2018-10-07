@@ -24,7 +24,7 @@ SOFTWARE.
 use io;
 
 pub trait Filter {
-    fn run(self: &Self, r: &io::paf::Record) -> bool;
+    fn run(self: &Self, r: &io::MappingRecord) -> bool;
 }
 
 pub mod length;

@@ -21,6 +21,7 @@ SOFTWARE.
 */
 
 /* local use */
+use io;
 
 /* crates use */
 use csv;
@@ -45,6 +46,44 @@ pub struct Record {
     pub nb_base: u64,
     pub mapping_quality: u64,
     pub sam_field: Vec<String>,
+}
+
+impl io::MappingRecord for Record {
+    fn read_a(self: &Self) -> String {
+        self.read_a.clone()
+    } 
+    
+    fn length_a(self: &Self) -> u64 {
+        self.length_a
+    }
+
+    fn begin_a(self: &Self) -> u64 {
+        self.begin_a
+    }
+
+    fn end_a(self: &Self) -> u64 {
+        self.end_a
+    }
+
+    fn strand(self: &Self) -> char {
+        self.strand
+    }
+    
+    fn read_b(self: &Self) -> String {
+        self.read_b.clone()
+    } 
+    
+    fn length_b(self: &Self) -> u64 {
+        self.length_b
+    }
+
+    fn begin_b(self: &Self) -> u64 {
+        self.begin_b
+    }
+
+    fn end_b(self: &Self) -> u64 {
+        self.end_b
+    }
 }
 
 type RecordInner = (String, u64, u64, u64, char, String, u64, u64, u64, u64, u64, Vec<String>);

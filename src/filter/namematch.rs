@@ -46,8 +46,8 @@ impl NameMatch {
 
 impl filter::Filter for NameMatch {
 
-    fn run(self: &Self, r: &io::paf::Record) -> bool {
-        let test = self.regex.is_match(&r.read_a) || self.regex.is_match(&r.read_b);
+    fn run(self: &Self, r: &io::MappingRecord) -> bool {
+        let test = self.regex.is_match(&r.read_a()) || self.regex.is_match(&r.read_b());
 
         return if self.reverse { !test } else { test };
     }
@@ -83,22 +83,22 @@ mod test {
     fn positif() {
         let mut nm = NameMatch::new("read_1", false);
 
-        assert_eq!(nm.run(&RECORD), true);
+        assert_eq!(nm.run(&*RECORD), true);
         
 		nm = NameMatch::new("read_1", true);
 
-        assert_eq!(nm.run(&RECORD), false);
+        assert_eq!(nm.run(&*RECORD), false);
     }
 
     #[test]
     fn negatif() {
         let mut nm = NameMatch::new("read_1", false);
 
-        assert_ne!(nm.run(&RECORD), false);
+        assert_ne!(nm.run(&*RECORD), false);
         
 		nm = NameMatch::new("read_1", true);
 
-        assert_ne!(nm.run(&RECORD), true);
+        assert_ne!(nm.run(&*RECORD), true);
     }
 
 }

@@ -43,7 +43,7 @@ impl Containment {
 
 impl filter::Filter for Containment {
 
-    fn run(self: &Self, r: &io::paf::Record) -> bool {
+    fn run(self: &Self, r: &io::MappingRecord) -> bool {
         let test: bool;
         
         match filter::InternalMatch::new(self.internal_threshold, false).run(r) {
@@ -52,16 +52,16 @@ impl filter::Filter for Containment {
         };
         
 
-        if r.strand == '+' && r.begin_a <= r.begin_b && r.length_a - r.end_a < r.length_b - r.end_b {
+        if r.strand() == '+' && r.begin_a() <= r.begin_b() && r.length_a() - r.end_a() < r.length_b() - r.end_b() {
             // B containe A
             test = true;
-        } else if r.strand == '-' && r.begin_a <= r.length_b - r.end_b && r.length_a - r.end_a < r.begin_b {
+        } else if r.strand() == '-' && r.begin_a() <= r.length_b() - r.end_b() && r.length_a() - r.end_a() < r.begin_b() {
             // B containe A
             test = true;
-        } else if r.strand == '+' && r.begin_a >= r.begin_b && r.length_a - r.end_a > r.length_b - r.end_b {
+        } else if r.strand() == '+' && r.begin_a() >= r.begin_b() && r.length_a() - r.end_a() > r.length_b() - r.end_b() {
             // A containe B
             test = true;
-        } else if r.strand == '-' && r.begin_a >= r.length_b - r.end_b && r.length_a - r.end_a > r.begin_b{
+        } else if r.strand() == '-' && r.begin_a() >= r.length_b() - r.end_b() && r.length_a() - r.end_a() > r.begin_b(){
             // A containe B
             test = true;
         } else {
@@ -101,24 +101,24 @@ mod test {
     #[test]
     fn positif() {
         let mut nm = Containment::new(0.8, false);
-        println!("{} {}", nm.run(&RECORD), true);
+        println!("{} {}", nm.run(&*RECORD), true);
 
-        assert_eq!(nm.run(&RECORD), true);
+        assert_eq!(nm.run(&*RECORD), true);
         
 		nm = Containment::new(0.8, true);
 
-        assert_eq!(nm.run(&RECORD), false);
+        assert_eq!(nm.run(&*RECORD), false);
     }
 
     #[test]
     fn negatif() {
         let mut nm = Containment::new(0.8, false);
 
-        assert_ne!(nm.run(&RECORD), false);
+        assert_ne!(nm.run(&*RECORD), false);
         
 		nm = Containment::new(0.8, true);
 
-        assert_ne!(nm.run(&RECORD), true);
+        assert_ne!(nm.run(&*RECORD), true);
     }
 }
 

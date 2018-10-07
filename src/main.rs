@@ -194,28 +194,47 @@ fn main() {
     let output: Box<std::io::Write> =
         file::get_output(matches.value_of("output").unwrap(), out_compression);
 
-    let mut writer = io::paf::Writer::new(output);
-
     /* Manage filter */
     let filters = generate_filters(&matches);
 
     /* Do the job */
-    for input in inputs {
-        let mut reader = if formats == "paf" {
-            io::paf::Reader::new(input)
-        } else {
-            io::paf::Reader::new(input)
-        };
+    if formats == "paf" {
+        let mut writer = io::paf::Writer::new(output);
 
-        for result in reader.records() {
-            let record = result.expect("Trouble during read of input");
-
-            if filters.iter().any(|ref x| x.run(&record)) {
-                continue;
-            }
-
-            writer.write(&record).expect("Trouble during write of output");
+        for input in inputs {
+            work_paf(io::paf::Reader::new(input), &mut writer, &filters);
         }
+    } else {
+        let mut writer = io::mhap::Writer::new(output);
+
+        for input in inputs {
+            work_mhap(io::mhap::Reader::new(input), &mut writer, &filters);
+        }
+    }
+
+}
+
+fn work_paf<R: std::io::Read, W: std::io::Write>(mut reader: io::paf::Reader<R>, writer: &mut io::paf::Writer<W>, filters: &Vec<Box<filter::Filter>>) {
+    for result in reader.records() {
+        let record = result.expect("Trouble during read of input");
+
+        if filters.iter().any(|ref x| x.run(&record)) {
+            continue;
+        }
+
+        writer.write(&record).expect("Trouble during write of output");
+    }
+}
+
+fn work_mhap<R: std::io::Read, W: std::io::Write>(mut reader: io::mhap::Reader<R>, writer: &mut io::mhap::Writer<W>, filters: &Vec<Box<filter::Filter>>) {
+    for result in reader.records() {
+        let record = result.expect("Trouble during read of input");
+
+        if filters.iter().any(|ref x| x.run(&record)) {
+            continue;
+        }
+
+        writer.write(&record).expect("Trouble during write of output");
     }
 }
 
