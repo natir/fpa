@@ -14,6 +14,14 @@ All this filter can be revert.
 
 For internal match, containment, dovetails definition go read [algorithm 5 in minimap article](https://academic.oup.com/bioinformatics/article/32/14/2103/1742895/Minimap-and-miniasm-fast-mapping-and-de-novo)
 
+## Usage
+
+```
+minimap2 long_read.fasta long_read.fasta | fpa -d | gzip - > long_read_dovetail.paf.gz
+minimap2 long_read.fasta long_read.fasta | fpa -l 500 -L 2000 > match_between_500_2000.paf
+minimap2 long_read.fasta long_read.fasta | fpa -s -m read_1 > no_self_match_no_read_1.paf
+```
+
 ## Rationale
 
 Long Read mapping tools provides all match they found in read dataset, for many usage some of match aren't usfull, this programme provide some filter to remove it. 
@@ -51,7 +59,7 @@ conda install fpa
 ```
 git clone https://github.com/natir/fpa.git
 cd fpa
-git checkout v0.1
+git checkout v.0.1.1
 
 cargo build
 cargo test
