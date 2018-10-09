@@ -54,10 +54,10 @@ use filter::Filter;
 
 fn main() {
 
-    let matches = App::new("fpaf")
+    let matches = App::new("fpa")
         .version("0.1 Mewto")
         .author("Pierre Marijon <pierre.marijon@inria.fr>")
-        .about("fpaf take in stdin PAF information and write in stdout the valid")
+        .about("fpa take in stdin long read mapping information and write in stdout the valid")
         .arg(Arg::with_name("delete_containment")
              .short("c")
              .display_order(10)
@@ -125,14 +125,12 @@ fn main() {
         .arg(Arg::with_name("delete_samename")
              .short("s")
              .display_order(90)
-             .takes_value(true)
              .long("delete-same-name")
              .help("If self match is discard")
              )
         .arg(Arg::with_name("keep_samename")
              .short("S")
              .display_order(100)
-             .takes_value(true)
              .long("keep-same-name")
              .help("Only self match are keeped")
              )
