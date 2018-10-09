@@ -33,7 +33,7 @@ This soft can be replace by a simple awk, bash, python, ~perl~, {your favorite l
 If you have a rust environment setup you can run :
 
 ```
-cargo install fpa
+cargo install fpa_lr
 ```
 
 ### With conda

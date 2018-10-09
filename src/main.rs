@@ -55,9 +55,9 @@ use filter::Filter;
 fn main() {
 
     let matches = App::new("fpa")
-        .version("0.1 Mewto")
+        .version("0.1 Gengar")
         .author("Pierre Marijon <pierre.marijon@inria.fr>")
-        .about("fpa take in stdin long read mapping information and write in stdout the valid")
+        .about("fpa take long read mapping information and filter them")
         .arg(Arg::with_name("delete_containment")
              .short("c")
              .display_order(10)
