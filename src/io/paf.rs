@@ -84,6 +84,13 @@ impl io::MappingRecord for Record {
     fn end_b(self: &Self) -> u64 {
         self.end_b
     }
+    
+    fn set_read_a(self: &mut Self, new_name: String) {
+        self.read_a = new_name;
+    }
+    fn set_read_b(self: &mut Self, new_name: String) {
+        self.read_b = new_name;
+    } 
 }
 
 type RecordInner = (String, u64, u64, u64, char, String, u64, u64, u64, u64, u64, Vec<String>);

@@ -17,10 +17,31 @@ For internal match, containment, dovetails definition go read [algorithm 5 in mi
 ## Usage
 
 ```
+fpa <option> <output> <input>…
+```
+
+By default input and output are stdin and stdout so you can use like this:
+
+```
 minimap2 long_read.fasta long_read.fasta | fpa -d | gzip - > long_read_dovetail.paf.gz
 minimap2 long_read.fasta long_read.fasta | fpa -l 500 -L 2000 > match_between_500_2000.paf
 minimap2 long_read.fasta long_read.fasta | fpa -s -m read_1 > no_self_match_no_read_1.paf
+minimap2 long_read.fasta long_read.fasta | fpa -s -r rename.csv > no_self_match_renamed_read_1.paf
 ```
+
+### Rename option
+
+The renaming option replaces the name of the read with another one.
+
+If the path passed in parameter exists, the file will be read as a two-column csv, the first column is the original name and the second corresponds to the new name:
+```
+original name1, new name1
+original name2, new name2
+```
+
+If the name of the read does not exist in the file it will not be replaced.
+
+If the path passed as parameter does not exist, the names will automatically be replaced by a number, a file like above example will be created.
 
 ## Rationale
 

@@ -42,15 +42,20 @@ extern crate lazy_static;
 mod io;
 mod file;
 mod filter;
+mod modifier;
 
 /* crates use */
 use clap::{App, Arg, ArgMatches};
 
 /* std use */
+use std::rc::Rc;
+use std::cell::{RefCell, RefMut};
 
 /* project use */
 #[allow(unused_imports)] 
 use filter::Filter;
+#[allow(unused_imports)] 
+use modifier::Modifier;
 
 fn main() {
 
@@ -135,15 +140,23 @@ fn main() {
              .help("Only self match are keeped")
              )
         .arg(Arg::with_name("internal-match-threshold")
-             .display_order(105)
              .takes_value(true)
+             .display_order(105)
              .long("internal-threshold")
              .default_value("0.8")
              .help("A match is internal match if overhang length > match length * internal threshold this option set internal match")
              )
-        .arg(Arg::with_name("compression-out")
-             .display_order(110)
+        .arg(Arg::with_name("modifier-renaming")
+             .short("r")
+             .long("rename")
              .takes_value(true)
+             .display_order(107)
+             .help("Rename read with value in file passed as parameter if exist or by index store in file passed as parameter are empty")
+             )
+        .arg(Arg::with_name("compression-out")
+             .short("z")
+             .takes_value(true)
+             .display_order(110)
              .long("compression-out")
              .possible_values(&["gzip", "bzip2", "lzma", "no"])
              .help("Output compression format, the input compression format is chosen by default")
@@ -166,6 +179,7 @@ fn main() {
              .default_value("-")
              )
         .get_matches();
+
 
     /* Manage input and output file */
     let mut compression: file::CompressionFormat = file::CompressionFormat::No;
@@ -195,47 +209,75 @@ fn main() {
     /* Manage filter */
     let filters = generate_filters(&matches);
 
+    /* Manage modifier */
+    let mut modifiers = generate_modifiers(&matches);
+
     /* Do the job */
     if formats == "paf" {
         let mut writer = io::paf::Writer::new(output);
 
         for input in inputs {
-            work_paf(io::paf::Reader::new(input), &mut writer, &filters);
+            work_paf(io::paf::Reader::new(input), &mut writer, &filters, &mut modifiers);
         }
     } else {
         let mut writer = io::mhap::Writer::new(output);
 
         for input in inputs {
-            work_mhap(io::mhap::Reader::new(input), &mut writer, &filters);
+            work_mhap(io::mhap::Reader::new(input), &mut writer, &filters, &mut modifiers);
         }
+    }
+    
+    for modifier in modifiers.iter_mut() {
+        let m : &RefCell<modifier::Modifier> = &*modifier.clone();
+        m.borrow_mut().write();
     }
 
 }
 
-fn work_paf<R: std::io::Read, W: std::io::Write>(mut reader: io::paf::Reader<R>, writer: &mut io::paf::Writer<W>, filters: &Vec<Box<filter::Filter>>) {
+fn work_paf<'a, R: std::io::Read, W: std::io::Write>(mut reader: io::paf::Reader<R>, writer: &mut io::paf::Writer<W>, filters: &Vec<Box<filter::Filter>>, modifiers: &mut Vec<Rc<RefCell<modifier::Modifier>>>) {
     for result in reader.records() {
-        let record = result.expect("Trouble during read of input");
+        let mut record = result.expect("Trouble during read of input");
 
         if filters.iter().any(|ref x| x.run(&record)) {
             continue;
+        }
+        
+        for modifier in modifiers.iter_mut() {
+            let m : &RefCell<modifier::Modifier> = &*modifier.clone();
+            m.borrow_mut().run(&mut record);
         }
 
         writer.write(&record).expect("Trouble during write of output");
     }
 }
 
-fn work_mhap<R: std::io::Read, W: std::io::Write>(mut reader: io::mhap::Reader<R>, writer: &mut io::mhap::Writer<W>, filters: &Vec<Box<filter::Filter>>) {
+fn work_mhap<'a, R: std::io::Read, W: std::io::Write>(mut reader: io::mhap::Reader<R>, writer: &mut io::mhap::Writer<W>, filters: &Vec<Box<filter::Filter>>, modifiers: &mut Vec<Rc<RefCell<modifier::Modifier>>>) {
     for result in reader.records() {
-        let record = result.expect("Trouble during read of input");
+        let mut record = result.expect("Trouble during read of input");
 
         if filters.iter().any(|ref x| x.run(&record)) {
             continue;
+        }
+
+        for modifier in modifiers.iter_mut() {
+            let m : &RefCell<modifier::Modifier> = &*modifier.clone();
+            m.borrow_mut().run(&mut record);
         }
 
         writer.write(&record).expect("Trouble during write of output");
     }
 }
 
+fn generate_modifiers<'a>(matches: &ArgMatches) -> Vec<Rc<RefCell<modifier::Modifier>>> {
+    let mut modifiers : Vec<Rc<RefCell<modifier::Modifier>>> = Vec::new();
+
+    if matches.is_present("modifier-renaming") {
+        let rename_file = matches.value_of("modifier-renaming").unwrap();
+        modifiers.push(Rc::new(RefCell::new(modifier::Renaming::new(rename_file))));
+    }
+
+    return modifiers;
+}
 fn generate_filters(matches: &ArgMatches) -> Vec<Box<filter::Filter>> {
     let mut filters : Vec<Box<filter::Filter>> = Vec::new();
    
