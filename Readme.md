@@ -80,7 +80,7 @@ conda install fpa
 ```
 git clone https://github.com/natir/fpa.git
 cd fpa
-git checkout V.0.1.1
+git checkout v0.2
 
 cargo build
 cargo test

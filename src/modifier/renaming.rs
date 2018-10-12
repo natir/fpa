@@ -30,7 +30,6 @@ use csv;
 
 /* project use */
 use io;
-use file;
 use modifier;
 
 pub struct Renaming {

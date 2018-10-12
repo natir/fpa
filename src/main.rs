@@ -49,7 +49,7 @@ use clap::{App, Arg, ArgMatches};
 
 /* std use */
 use std::rc::Rc;
-use std::cell::{RefCell, RefMut};
+use std::cell::RefCell;
 
 /* project use */
 #[allow(unused_imports)] 
@@ -60,7 +60,7 @@ use modifier::Modifier;
 fn main() {
 
     let matches = App::new("fpa")
-        .version("0.1 Gengar")
+        .version("0.2 Beedrill")
         .author("Pierre Marijon <pierre.marijon@inria.fr>")
         .about("fpa take long read mapping information and filter them")
         .arg(Arg::with_name("delete_containment")

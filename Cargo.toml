@@ -1,6 +1,6 @@
 [package]
 name = "fpa_lr"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Pierre Marijon <pierre.marijon@inria.fr>"]
 
 description = "fpa filter long read mapping information to save disk space"
