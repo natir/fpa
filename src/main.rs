@@ -40,155 +40,39 @@ extern crate lazy_static;
 
 /* project mod */
 mod io;
+mod cli;
 mod file;
+mod work;
 mod filter;
 mod modifier;
 
-/* crates use */
-use clap::{App, Arg, ArgMatches};
-
-/* std use */
-use std::rc::Rc;
-use std::cell::RefCell;
-
-/* project use */
-#[allow(unused_imports)] 
-use filter::Filter;
-#[allow(unused_imports)] 
-use modifier::Modifier;
-
 fn main() {
 
-    let matches = App::new("fpa")
-        .version("0.2 Beedrill")
-        .author("Pierre Marijon <pierre.marijon@inria.fr>")
-        .about("fpa take long read mapping information and filter them")
-        .arg(Arg::with_name("delete_containment")
-             .short("c")
-             .display_order(10)
-             .long("delete-containment")
-             .help("If match are containment match is discard")
-             )
-        .arg(Arg::with_name("keep_containment")
-             .short("C")
-             .display_order(20)
-             .long("keep-containment")
-             .help("Only containment match is keeped")
-             )
-        .arg(Arg::with_name("delete_internalmatch")
-             .short("i")
-             .display_order(30)
-             .long("delete-internalmatch")
-             .help("If match are an internal match is discard")
-             )
-        .arg(Arg::with_name("keep_internalmatch")
-             .short("I")
-             .display_order(40)
-             .long("keep-internalmatch")
-             .help("Only internal match overlap is keeped")
-             )
-        .arg(Arg::with_name("delete_dovetail")
-             .short("d")
-             .display_order(42)
-             .long("delete-dovetail")
-             .help("If match are an dovetail is discard")
-             )
-        .arg(Arg::with_name("keep_dovetail")
-             .short("D")
-             .display_order(48)
-             .long("keep-dovetail")
-             .help("Only dovetail overlap is keeped")
-             )
-        .arg(Arg::with_name("delete_length_lower")
-             .short("l")
-             .display_order(50)
-             .takes_value(true)
-             .long("delete-lower")
-             .help("If match length is lower than the value is discard")
-             )
-        .arg(Arg::with_name("delete_length_greater")
-             .short("L")
-             .display_order(60)
-             .takes_value(true)
-             .long("delete-upper")
-             .help("If match length is upper than the value is discard")
-             )
-        .arg(Arg::with_name("delete_name_match")
-             .short("m")
-             .display_order(70)
-             .takes_value(true)
-             .long("delete-match")
-             .help("If match contain read name match with regex is discard")
-             )
-        .arg(Arg::with_name("keep_name_match")
-             .short("M")
-             .display_order(80)
-             .takes_value(true)
-             .long("keep-match")
-             .help("Only match contain read name match with regex keeped")
-             )
-        .arg(Arg::with_name("delete_samename")
-             .short("s")
-             .display_order(90)
-             .long("delete-same-name")
-             .help("If self match is discard")
-             )
-        .arg(Arg::with_name("keep_samename")
-             .short("S")
-             .display_order(100)
-             .long("keep-same-name")
-             .help("Only self match are keeped")
-             )
-        .arg(Arg::with_name("internal-match-threshold")
-             .takes_value(true)
-             .display_order(105)
-             .long("internal-threshold")
-             .default_value("0.8")
-             .help("A match is internal match if overhang length > match length * internal threshold this option set internal match")
-             )
-        .arg(Arg::with_name("modifier-renaming")
-             .short("r")
-             .long("rename")
-             .takes_value(true)
-             .display_order(107)
-             .help("Rename read with value in file passed as parameter if exist or by index store in file passed as parameter are empty")
-             )
-        .arg(Arg::with_name("compression-out")
-             .short("z")
-             .takes_value(true)
-             .display_order(110)
-             .long("compression-out")
-             .possible_values(&["gzip", "bzip2", "lzma", "no"])
-             .help("Output compression format, the input compression format is chosen by default")
-             )
-        .arg(Arg::with_name("format")
-             .short("F")
-             .long("format")
-             .display_order(120)
-             .takes_value(true)
-             .help("Force the format used")
-             .possible_values(&["paf", "mhap"])
-             )
-        .arg(Arg::with_name("output")
-             .takes_value(true)
-             .default_value("-")
-             )
-        .arg(Arg::with_name("input")
-             .multiple(true)
-             .takes_value(true)
-             .default_value("-")
-             )
-        .get_matches();
-
+    let matches = cli::parser();
 
     /* Manage input and output file */
     let mut compression: file::CompressionFormat = file::CompressionFormat::No;
     let mut inputs: Vec<Box<std::io::Read>> = Vec::new();
     
-    let formats = if matches.is_present("format") {
-        matches.value_of("format").unwrap()
+    let format = if matches.is_present("format") {
+        match matches.value_of("format").unwrap() {
+            "paf" => work::InOutFormat::Paf,
+            "mhap" => work::InOutFormat::Mhap,
+            _ => work::InOutFormat::Paf,
+        }
     } else {
-        "paf"
+        work::InOutFormat::Paf
+    };
+    
+    let mode = if matches.is_present("mode") {
+        match matches.value_of("mode").unwrap() {
+            "basic" => work::Mode::Basic,
+            "gfa1" => work::Mode::Gfa1,
+            //"gfa2" => work::Mode::Gfa2, // Not yet support
+            _ => work::Mode::Basic,
+        }
+    } else {
+        work::Mode::Basic
     };
 
     for input_name in matches.values_of("input").unwrap() {
@@ -203,161 +87,14 @@ fn main() {
         matches.value_of("compression-out").unwrap_or("no"),
     );
 
-    let output: Box<std::io::Write> =
+    let mut output: Box<std::io::Write> =
         file::get_output(matches.value_of("output").unwrap(), out_compression);
 
     /* Manage filter */
-    let filters = generate_filters(&matches);
+    let filters = cli::generate_filters(&matches);
 
     /* Manage modifier */
-    let mut modifiers = generate_modifiers(&matches);
+    let mut modifiers = cli::generate_modifiers(&matches);
 
-    /* Do the job */
-    if formats == "paf" {
-        let mut writer = io::paf::Writer::new(output);
-
-        for input in inputs {
-            work_paf(io::paf::Reader::new(input), &mut writer, &filters, &mut modifiers);
-        }
-    } else {
-        let mut writer = io::mhap::Writer::new(output);
-
-        for input in inputs {
-            work_mhap(io::mhap::Reader::new(input), &mut writer, &filters, &mut modifiers);
-        }
-    }
-    
-    for modifier in modifiers.iter_mut() {
-        let m : &RefCell<modifier::Modifier> = &*modifier.clone();
-        m.borrow_mut().write();
-    }
-
-}
-
-fn work_paf<'a, R: std::io::Read, W: std::io::Write>(mut reader: io::paf::Reader<R>, writer: &mut io::paf::Writer<W>, filters: &Vec<Box<filter::Filter>>, modifiers: &mut Vec<Rc<RefCell<modifier::Modifier>>>) {
-    for result in reader.records() {
-        let mut record = result.expect("Trouble during read of input");
-
-        if filters.iter().any(|ref x| x.run(&record)) {
-            continue;
-        }
-        
-        for modifier in modifiers.iter_mut() {
-            let m : &RefCell<modifier::Modifier> = &*modifier.clone();
-            m.borrow_mut().run(&mut record);
-        }
-
-        writer.write(&record).expect("Trouble during write of output");
-    }
-}
-
-fn work_mhap<'a, R: std::io::Read, W: std::io::Write>(mut reader: io::mhap::Reader<R>, writer: &mut io::mhap::Writer<W>, filters: &Vec<Box<filter::Filter>>, modifiers: &mut Vec<Rc<RefCell<modifier::Modifier>>>) {
-    for result in reader.records() {
-        let mut record = result.expect("Trouble during read of input");
-
-        if filters.iter().any(|ref x| x.run(&record)) {
-            continue;
-        }
-
-        for modifier in modifiers.iter_mut() {
-            let m : &RefCell<modifier::Modifier> = &*modifier.clone();
-            m.borrow_mut().run(&mut record);
-        }
-
-        writer.write(&record).expect("Trouble during write of output");
-    }
-}
-
-fn generate_modifiers<'a>(matches: &ArgMatches) -> Vec<Rc<RefCell<modifier::Modifier>>> {
-    let mut modifiers : Vec<Rc<RefCell<modifier::Modifier>>> = Vec::new();
-
-    if matches.is_present("modifier-renaming") {
-        let rename_file = matches.value_of("modifier-renaming").unwrap();
-        modifiers.push(Rc::new(RefCell::new(modifier::Renaming::new(rename_file))));
-    }
-
-    return modifiers;
-}
-fn generate_filters(matches: &ArgMatches) -> Vec<Box<filter::Filter>> {
-    let mut filters : Vec<Box<filter::Filter>> = Vec::new();
-   
-    let internal_match_t = matches.value_of("internal-match-threshold").unwrap().parse::<f64>().unwrap();
-
-    if matches.is_present("delete_internalmatch") {
-        filters.push(Box::new(filter::InternalMatch::new(internal_match_t, false)));
-    }
-    
-    if matches.is_present("keep_internalmatch") {
-        filters.push(Box::new(filter::InternalMatch::new(internal_match_t, true)));
-    }
-    
-    if matches.is_present("delete_containment") {
-        filters.push(Box::new(filter::Containment::new(internal_match_t, false)));
-    }
-    
-    if matches.is_present("keep_containment") {
-        filters.push(Box::new(filter::Containment::new(internal_match_t, true)));
-    }
-    
-    if matches.is_present("delete_dovetail") {
-        filters.push(Box::new(filter::Dovetails::new(internal_match_t, false)));
-    }
-    
-    if matches.is_present("keep_dovetail") {
-        filters.push(Box::new(filter::Dovetails::new(internal_match_t, true)));
-    }
-    
-    if matches.is_present("delete_length_lower") {
-        filters.push(
-            Box::new(
-                filter::Length::new(
-                    matches.value_of("delete_length_lower").unwrap().parse::<u64>().unwrap(),
-                    std::cmp::Ordering::Less
-                )
-            )
-        );
-    }
-    
-    if matches.is_present("delete_length_greater") {
-        filters.push(
-            Box::new(
-                filter::Length::new(
-                    matches.value_of("delete_length_greater").unwrap().parse::<u64>().unwrap(),
-                    std::cmp::Ordering::Greater
-                )
-            )
-        );
-    }
-    
-    if matches.is_present("delete_name_match") {
-        filters.push(
-            Box::new(
-                filter::NameMatch::new(
-                    matches.value_of("delete_name_match").unwrap(),
-                    false
-                )
-            )
-        );
-    }
-    
-    if matches.is_present("keep_name_match") {
-        filters.push(
-            Box::new(
-                filter::NameMatch::new(
-                    matches.value_of("keep_name_match").unwrap(),
-                    true
-                )
-            )
-        );
-    }
-    
-    if matches.is_present("delete_samename") {
-        filters.push(Box::new(filter::SameName::new(false)));
-    }
-    
-    if matches.is_present("keep_samename") {
-        filters.push(Box::new(filter::SameName::new(true)));
-    }
-
-	return filters;
+    work::run(inputs, &mut output, &filters, &mut modifiers, &matches, format, mode);
 }

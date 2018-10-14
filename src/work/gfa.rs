@@ -20,21 +20,43 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-pub mod paf;
-pub mod mhap;
+/* project use */
+use io;
+use work;
+use filter;
+use modifier;
 
-pub trait MappingRecord {
-    fn read_a(self: &Self) -> String;  
-    fn length_a(self: &Self) -> u64;
-    fn begin_a(self: &Self) -> u64;
-    fn end_a(self: &Self) -> u64;
-    fn strand(self: &Self) -> char;
-    fn read_b(self: &Self) -> String;
-    fn length_b(self: &Self) -> u64;
-    fn begin_b(self: &Self) -> u64;
-    fn end_b(self: &Self) -> u64;
+/* std use */
+use std;
+use std::rc::Rc;
+use std::cell::RefCell;
 
-    fn set_read_a(self: &mut Self, new_name: String);
-    fn set_read_b(self: &mut Self, new_name: String);
+/* crate use */
+use clap::ArgMatches;
+
+struct Gfa1Node {
+    readName: String,
+    length: u64,
 }
 
+struct Gfa1 {
+    keep_internal: bool,
+    keep_containment: bool,
+}
+
+pub fn gfa1<R: std::io::Read, W: std::io::Write>(inputs: Vec<R>, output: &mut W, modifiers: &mut Vec<Rc<RefCell<modifier::Modifier>>>, matches: &ArgMatches, format: work::InOutFormat) {
+    if format == work::InOutFormat::Mhap {
+        //mhap();
+    } else {
+        //paf();
+    }
+}
+
+fn paf<R: std::io::Read, W: std::io::Write>(mut reader: io::paf::Reader<R>, writer: &mut io::paf::Writer<W>, filters: &Vec<Box<filter::Filter>>, modifiers: &mut Vec<Rc<RefCell<modifier::Modifier>>>, matches: &ArgMatches) {
+
+}
+
+
+fn mhap<R: std::io::Read, W: std::io::Write>(mut reader: io::mhap::Reader<R>, writer: &mut io::mhap::Writer<W>, filters: &Vec<Box<filter::Filter>>, modifiers: &mut Vec<Rc<RefCell<modifier::Modifier>>>, matches: &ArgMatches) {
+
+}
