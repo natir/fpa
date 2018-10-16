@@ -42,11 +42,8 @@ impl Length {
 }
 
 impl filter::Filter for Length {
-    
     fn run(self: &Self, r: &io::MappingRecord) -> bool {
-        let length = std::cmp::max(r.end_a() - r.begin_a(), r.end_b() - r.begin_b());
-
-        return length.cmp(&self.length_threshold) == self.ordering;
+        return r.length().cmp(&self.length_threshold) == self.ordering;
     }
 }
 
@@ -54,7 +51,7 @@ impl filter::Filter for Length {
 mod test {
 
     use super::*;
-	use filter::Filter;
+    use filter::Filter;
 
     lazy_static! {
         static ref RECORD: io::paf::Record = {
@@ -81,8 +78,8 @@ mod test {
         let mut nm = Length::new(5001, std::cmp::Ordering::Less);
 
         assert_eq!(nm.run(&*RECORD), true);
-        
-		nm = Length::new(5001, std::cmp::Ordering::Greater);
+
+        nm = Length::new(5001, std::cmp::Ordering::Greater);
 
         assert_eq!(nm.run(&*RECORD), false);
     }
@@ -92,10 +89,9 @@ mod test {
         let mut nm = Length::new(5001, std::cmp::Ordering::Less);
 
         assert_ne!(nm.run(&*RECORD), false);
-        
-		nm = Length::new(5001, std::cmp::Ordering::Greater);
+
+        nm = Length::new(5001, std::cmp::Ordering::Greater);
 
         assert_ne!(nm.run(&*RECORD), true);
     }
 }
-

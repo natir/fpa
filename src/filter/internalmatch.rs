@@ -43,14 +43,13 @@ impl InternalMatch {
 }
 
 impl filter::Filter for InternalMatch {
-    
     fn run(self: &Self, r: &io::MappingRecord) -> bool {
         let overhang = if r.strand() == '+' {
             min(r.begin_a(), r.begin_b()) + min(r.length_a() - r.end_a(), r.length_b() - r.end_b())
         } else {
             min(r.begin_a(), r.length_b() - r.end_b()) + min(r.begin_b(), r.length_a() - r.end_a())
         };
-        
+
         let maplen = max(r.end_a() - r.begin_a(), r.end_b() - r.begin_b());
 
         let test = overhang > (maplen as f64 * self.internal_threshold) as u64;
@@ -63,7 +62,7 @@ impl filter::Filter for InternalMatch {
 mod test {
 
     use super::*;
-	use filter::Filter;
+    use filter::Filter;
 
     lazy_static! {
         static ref RECORD: io::paf::Record = {
@@ -90,8 +89,8 @@ mod test {
         let mut nm = InternalMatch::new(0.8, false);
 
         assert_eq!(nm.run(&*RECORD), true);
-        
-		nm = InternalMatch::new(0.8, true);
+
+        nm = InternalMatch::new(0.8, true);
 
         assert_eq!(nm.run(&*RECORD), false);
     }
@@ -101,11 +100,9 @@ mod test {
         let mut nm = InternalMatch::new(0.8, false);
 
         assert_ne!(nm.run(&*RECORD), false);
-        
-		nm = InternalMatch::new(0.8, true);
+
+        nm = InternalMatch::new(0.8, true);
 
         assert_ne!(nm.run(&*RECORD), true);
     }
 }
-
-

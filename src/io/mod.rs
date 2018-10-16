@@ -22,9 +22,10 @@ SOFTWARE.
 
 pub mod paf;
 pub mod mhap;
+pub mod gfa;
 
 pub trait MappingRecord {
-    fn read_a(self: &Self) -> String;  
+    fn read_a(self: &Self) -> String;
     fn length_a(self: &Self) -> u64;
     fn begin_a(self: &Self) -> u64;
     fn end_a(self: &Self) -> u64;
@@ -34,7 +35,11 @@ pub trait MappingRecord {
     fn begin_b(self: &Self) -> u64;
     fn end_b(self: &Self) -> u64;
 
+    fn length(self: &Self) -> u64;
+
+    fn len_to_end_a(self: &Self) -> u64;
+    fn len_to_end_b(self: &Self) -> u64;
+
     fn set_read_a(self: &mut Self, new_name: String);
     fn set_read_b(self: &mut Self, new_name: String);
 }
-

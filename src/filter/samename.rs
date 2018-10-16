@@ -33,14 +33,11 @@ pub struct SameName {
 
 impl SameName {
     pub fn new(reverse: bool) -> Self {
-        SameName {
-            reverse: reverse,
-        }
+        SameName { reverse: reverse }
     }
 }
 
 impl filter::Filter for SameName {
-
     fn run(self: &Self, r: &io::MappingRecord) -> bool {
         let test = r.read_a() == r.read_b();
 
@@ -52,7 +49,7 @@ impl filter::Filter for SameName {
 mod test {
 
     use super::*;
-	use filter::Filter;
+    use filter::Filter;
 
     lazy_static! {
         static ref RECORD: io::paf::Record = {
@@ -80,8 +77,8 @@ mod test {
         println!("{} {}", nm.run(&*RECORD), true);
 
         assert_eq!(nm.run(&*RECORD), true);
-        
-		nm = SameName::new(true);
+
+        nm = SameName::new(true);
 
         assert_eq!(nm.run(&*RECORD), false);
     }
@@ -91,10 +88,9 @@ mod test {
         let mut nm = SameName::new(false);
 
         assert_ne!(nm.run(&*RECORD), false);
-        
-		nm = SameName::new(true);
+
+        nm = SameName::new(true);
 
         assert_ne!(nm.run(&*RECORD), true);
     }
 }
-

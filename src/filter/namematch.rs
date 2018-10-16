@@ -45,7 +45,6 @@ impl NameMatch {
 }
 
 impl filter::Filter for NameMatch {
-
     fn run(self: &Self, r: &io::MappingRecord) -> bool {
         let test = self.regex.is_match(&r.read_a()) || self.regex.is_match(&r.read_b());
 
@@ -57,7 +56,7 @@ impl filter::Filter for NameMatch {
 mod test {
 
     use super::*;
-	use filter::Filter;
+    use filter::Filter;
 
     lazy_static! {
         static ref RECORD: io::paf::Record = {
@@ -84,8 +83,8 @@ mod test {
         let mut nm = NameMatch::new("read_1", false);
 
         assert_eq!(nm.run(&*RECORD), true);
-        
-		nm = NameMatch::new("read_1", true);
+
+        nm = NameMatch::new("read_1", true);
 
         assert_eq!(nm.run(&*RECORD), false);
     }
@@ -95,8 +94,8 @@ mod test {
         let mut nm = NameMatch::new("read_1", false);
 
         assert_ne!(nm.run(&*RECORD), false);
-        
-		nm = NameMatch::new("read_1", true);
+
+        nm = NameMatch::new("read_1", true);
 
         assert_ne!(nm.run(&*RECORD), true);
     }

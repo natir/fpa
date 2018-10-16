@@ -31,46 +31,50 @@ use std;
 use std::rc::Rc;
 use std::cell::RefCell;
 
-pub fn basic<R: std::io::Read, W: std::io::Write>(inputs: Vec<R>, output: &mut W, filters: &Vec<Box<filter::Filter>>, modifiers: &mut Vec<Rc<RefCell<modifier::Modifier>>>, format: work::InOutFormat) {
- 
+pub fn basic<R: std::io::Read, W: std::io::Write>(
+    inputs: Vec<R>,
+    output: &mut W,
+    filters: &Vec<Box<filter::Filter>>,
+    modifiers: &mut Vec<Rc<RefCell<modifier::Modifier>>>,
+    format: work::InOutFormat,
+) {
+
     if format == work::InOutFormat::Mhap {
         let mut writer = io::mhap::Writer::new(output);
 
         for input in inputs {
-            mhap(io::mhap::Reader::new(input), &mut writer, &filters, modifiers);
+            mhap(
+                io::mhap::Reader::new(input),
+                &mut writer,
+                &filters,
+                modifiers,
+            );
         }
     } else {
         let mut writer = io::paf::Writer::new(output);
 
         for input in inputs {
-            paf(io::paf::Reader::new(input), &mut writer, &filters, modifiers);
+            paf(
+                io::paf::Reader::new(input),
+                &mut writer,
+                &filters,
+                modifiers,
+            );
         }
     }
-    
+
     for modifier in modifiers.iter_mut() {
-        let m : &RefCell<modifier::Modifier> = &*modifier.clone();
+        let m: &RefCell<modifier::Modifier> = &*modifier.clone();
         m.borrow_mut().write();
     }
 }
-    
-fn paf<R: std::io::Read, W: std::io::Write>(mut reader: io::paf::Reader<R>, writer: &mut io::paf::Writer<W>, filters: &Vec<Box<filter::Filter>>, modifiers: &mut Vec<Rc<RefCell<modifier::Modifier>>>) {
-    for result in reader.records() {
-        let mut record = result.expect("Trouble during read of input");
 
-        if filters.iter().any(|ref x| x.run(&record)) {
-            continue;
-        }
-        
-        for modifier in modifiers.iter_mut() {
-            let m : &RefCell<modifier::Modifier> = &*modifier.clone();
-            m.borrow_mut().run(&mut record);
-        }
-
-        writer.write(&record).expect("Trouble during write of output");
-    }
-}
-
-fn mhap<'a, R: std::io::Read, W: std::io::Write>(mut reader: io::mhap::Reader<R>, writer: &mut io::mhap::Writer<W>, filters: &Vec<Box<filter::Filter>>, modifiers: &mut Vec<Rc<RefCell<modifier::Modifier>>>) {
+fn paf<R: std::io::Read, W: std::io::Write>(
+    mut reader: io::paf::Reader<R>,
+    writer: &mut io::paf::Writer<W>,
+    filters: &Vec<Box<filter::Filter>>,
+    modifiers: &mut Vec<Rc<RefCell<modifier::Modifier>>>,
+) {
     for result in reader.records() {
         let mut record = result.expect("Trouble during read of input");
 
@@ -79,12 +83,36 @@ fn mhap<'a, R: std::io::Read, W: std::io::Write>(mut reader: io::mhap::Reader<R>
         }
 
         for modifier in modifiers.iter_mut() {
-            let m : &RefCell<modifier::Modifier> = &*modifier.clone();
+            let m: &RefCell<modifier::Modifier> = &*modifier.clone();
             m.borrow_mut().run(&mut record);
         }
 
-        writer.write(&record).expect("Trouble during write of output");
+        writer.write(&record).expect(
+            "Trouble during write of output",
+        );
     }
 }
 
+fn mhap<'a, R: std::io::Read, W: std::io::Write>(
+    mut reader: io::mhap::Reader<R>,
+    writer: &mut io::mhap::Writer<W>,
+    filters: &Vec<Box<filter::Filter>>,
+    modifiers: &mut Vec<Rc<RefCell<modifier::Modifier>>>,
+) {
+    for result in reader.records() {
+        let mut record = result.expect("Trouble during read of input");
 
+        if filters.iter().any(|ref x| x.run(&record)) {
+            continue;
+        }
+
+        for modifier in modifiers.iter_mut() {
+            let m: &RefCell<modifier::Modifier> = &*modifier.clone();
+            m.borrow_mut().run(&mut record);
+        }
+
+        writer.write(&record).expect(
+            "Trouble during write of output",
+        );
+    }
+}

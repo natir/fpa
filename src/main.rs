@@ -20,12 +20,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+extern crate bzip2;
 extern crate csv;
 extern crate clap;
+extern crate flate2;
+extern crate petgraph;
 extern crate regex;
 extern crate serde;
-extern crate bzip2;
-extern crate flate2;
 extern crate xz2;
 
 #[macro_use]
@@ -53,7 +54,7 @@ fn main() {
     /* Manage input and output file */
     let mut compression: file::CompressionFormat = file::CompressionFormat::No;
     let mut inputs: Vec<Box<std::io::Read>> = Vec::new();
-    
+
     let format = if matches.is_present("format") {
         match matches.value_of("format").unwrap() {
             "paf" => work::InOutFormat::Paf,
@@ -63,7 +64,7 @@ fn main() {
     } else {
         work::InOutFormat::Paf
     };
-    
+
     let mode = if matches.is_present("mode") {
         match matches.value_of("mode").unwrap() {
             "basic" => work::Mode::Basic,
@@ -96,5 +97,13 @@ fn main() {
     /* Manage modifier */
     let mut modifiers = cli::generate_modifiers(&matches);
 
-    work::run(inputs, &mut output, &filters, &mut modifiers, &matches, format, mode);
+    work::run(
+        inputs,
+        &mut output,
+        &filters,
+        &mut modifiers,
+        &matches,
+        format,
+        mode,
+    );
 }

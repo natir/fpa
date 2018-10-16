@@ -42,7 +42,6 @@ impl Dovetails {
 }
 
 impl filter::Filter for Dovetails {
-    
     fn run(self: &Self, r: &io::MappingRecord) -> bool {
         let test = !filter::Containment::new(self.internal_threshold, false).run(r);
 
@@ -54,7 +53,7 @@ impl filter::Filter for Dovetails {
 mod test {
 
     use super::*;
-	use filter::Filter;
+    use filter::Filter;
 
     lazy_static! {
         static ref RECORD: io::paf::Record = {
@@ -81,8 +80,8 @@ mod test {
         let mut nm = Dovetails::new(0.8, false);
 
         assert_eq!(nm.run(&*RECORD), true);
-        
-		nm = Dovetails::new(0.8, true);
+
+        nm = Dovetails::new(0.8, true);
 
         assert_eq!(nm.run(&*RECORD), false);
     }
@@ -92,10 +91,9 @@ mod test {
         let mut nm = Dovetails::new(0.8, false);
 
         assert_ne!(nm.run(&*RECORD), false);
-        
-		nm = Dovetails::new(0.8, true);
+
+        nm = Dovetails::new(0.8, true);
 
         assert_ne!(nm.run(&*RECORD), true);
     }
 }
-

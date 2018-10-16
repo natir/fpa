@@ -32,7 +32,7 @@ use std::cell::RefCell;
 /* crates use */
 use clap::{App, Arg, ArgMatches};
 
-pub fn parser<'a>() -> ArgMatches<'a> { 
+pub fn parser<'a>() -> ArgMatches<'a> {
     App::new("fpa")
         .version("0.2 Beedrill")
         .author("Pierre Marijon <pierre.marijon@inria.fr>")
@@ -149,7 +149,7 @@ pub fn parser<'a>() -> ArgMatches<'a> {
              .display_order(120)
              .takes_value(true)
              .default_value("basic")
-             .help("basic: output in same format as input, gfa1 output is in gfa1 overlap graph format")
+             .help("basic: output in same format as input, gfa1: output is in gfa1 overlap graph format (by default flag -I and -C are up)")
              .possible_values(&["basic", "gfa1"])
              )
         .arg(Arg::with_name("output")
@@ -166,7 +166,7 @@ pub fn parser<'a>() -> ArgMatches<'a> {
 
 
 pub fn generate_modifiers<'a>(matches: &ArgMatches) -> Vec<Rc<RefCell<modifier::Modifier>>> {
-    let mut modifiers : Vec<Rc<RefCell<modifier::Modifier>>> = Vec::new();
+    let mut modifiers: Vec<Rc<RefCell<modifier::Modifier>>> = Vec::new();
 
     if matches.is_present("modifier-renaming") {
         let rename_file = matches.value_of("modifier-renaming").unwrap();
@@ -175,86 +175,95 @@ pub fn generate_modifiers<'a>(matches: &ArgMatches) -> Vec<Rc<RefCell<modifier::
 
     return modifiers;
 }
+
+
 pub fn generate_filters(matches: &ArgMatches) -> Vec<Box<filter::Filter>> {
-    let mut filters : Vec<Box<filter::Filter>> = Vec::new();
-   
-    let internal_match_t = matches.value_of("internal-match-threshold").unwrap().parse::<f64>().unwrap();
+
+    let mut filters: Vec<Box<filter::Filter>> = Vec::new();
+
+    generate_type_filters(matches, &mut filters);
+    generate_other_filters(matches, &mut filters);
+
+    return filters;
+}
+
+pub fn generate_type_filters(matches: &ArgMatches, filters: &mut Vec<Box<filter::Filter>>) {
+
+    let internal_match_t = matches
+        .value_of("internal-match-threshold")
+        .unwrap()
+        .parse::<f64>()
+        .unwrap();
 
     if matches.is_present("delete_internalmatch") {
-        filters.push(Box::new(filter::InternalMatch::new(internal_match_t, false)));
+        filters.push(Box::new(
+            filter::InternalMatch::new(internal_match_t, false),
+        ));
     }
-    
+
     if matches.is_present("keep_internalmatch") {
         filters.push(Box::new(filter::InternalMatch::new(internal_match_t, true)));
     }
-    
+
     if matches.is_present("delete_containment") {
         filters.push(Box::new(filter::Containment::new(internal_match_t, false)));
     }
-    
+
     if matches.is_present("keep_containment") {
         filters.push(Box::new(filter::Containment::new(internal_match_t, true)));
     }
-    
+
     if matches.is_present("delete_dovetail") {
         filters.push(Box::new(filter::Dovetails::new(internal_match_t, false)));
     }
-    
+
     if matches.is_present("keep_dovetail") {
         filters.push(Box::new(filter::Dovetails::new(internal_match_t, true)));
     }
-    
+}
+
+pub fn generate_other_filters(matches: &ArgMatches, filters: &mut Vec<Box<filter::Filter>>) {
     if matches.is_present("delete_length_lower") {
-        filters.push(
-            Box::new(
-                filter::Length::new(
-                    matches.value_of("delete_length_lower").unwrap().parse::<u64>().unwrap(),
-                    std::cmp::Ordering::Less
-                )
-            )
-        );
+        filters.push(Box::new(filter::Length::new(
+            matches
+                .value_of("delete_length_lower")
+                .unwrap()
+                .parse::<u64>()
+                .unwrap(),
+            std::cmp::Ordering::Less,
+        )));
     }
-    
+
     if matches.is_present("delete_length_greater") {
-        filters.push(
-            Box::new(
-                filter::Length::new(
-                    matches.value_of("delete_length_greater").unwrap().parse::<u64>().unwrap(),
-                    std::cmp::Ordering::Greater
-                )
-            )
-        );
+        filters.push(Box::new(filter::Length::new(
+            matches
+                .value_of("delete_length_greater")
+                .unwrap()
+                .parse::<u64>()
+                .unwrap(),
+            std::cmp::Ordering::Greater,
+        )));
     }
-    
+
     if matches.is_present("delete_name_match") {
-        filters.push(
-            Box::new(
-                filter::NameMatch::new(
-                    matches.value_of("delete_name_match").unwrap(),
-                    false
-                )
-            )
-        );
+        filters.push(Box::new(filter::NameMatch::new(
+            matches.value_of("delete_name_match").unwrap(),
+            false,
+        )));
     }
-    
+
     if matches.is_present("keep_name_match") {
-        filters.push(
-            Box::new(
-                filter::NameMatch::new(
-                    matches.value_of("keep_name_match").unwrap(),
-                    true
-                )
-            )
-        );
+        filters.push(Box::new(filter::NameMatch::new(
+            matches.value_of("keep_name_match").unwrap(),
+            true,
+        )));
     }
-    
+
     if matches.is_present("delete_samename") {
         filters.push(Box::new(filter::SameName::new(false)));
     }
-    
+
     if matches.is_present("keep_samename") {
         filters.push(Box::new(filter::SameName::new(true)));
     }
-
-	return filters;
 }

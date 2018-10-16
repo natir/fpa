@@ -20,48 +20,5 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-/* project use */
-use filter;
-use modifier;
-
-/* std use */
-use std;
-use std::rc::Rc;
-use std::cell::RefCell;
-
-/* crate use */
-use clap::ArgMatches;
-
-/* module declaration */
-mod gfa;
-mod basic;
-
-#[derive(Debug, PartialEq)]
-pub enum InOutFormat {
-    Paf,
-    Mhap,
-}
-
-#[derive(Debug, PartialEq)]
-pub enum Mode {
-    Basic,
-    Gfa1,
-    // Gfa2, // not support yet
-}
-
-pub fn run<R: std::io::Read, W: std::io::Write>(
-    inputs: Vec<R>,
-    output: &mut W,
-    filters: &Vec<Box<filter::Filter>>,
-    modifiers: &mut Vec<Rc<RefCell<modifier::Modifier>>>,
-    matches: &ArgMatches,
-    format: InOutFormat,
-    mode: Mode,
-) {
-
-    if mode == Mode::Basic {
-        basic::basic(inputs, output, filters, modifiers, format);
-    } else {
-        gfa::gfa1(inputs, output, modifiers, matches, format);
-    }
-}
+pub mod gfa1;
+pub use self::gfa1::Gfa1;

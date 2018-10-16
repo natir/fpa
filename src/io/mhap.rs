@@ -29,6 +29,7 @@ use csv;
 /* standard use */
 use std;
 use std::fs;
+use std::cmp::min;
 use std::path::Path;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -50,8 +51,8 @@ pub struct Record {
 impl io::MappingRecord for Record {
     fn read_a(self: &Self) -> String {
         self.read_a.clone()
-    } 
-    
+    }
+
     fn length_a(self: &Self) -> u64 {
         self.length_a
     }
@@ -65,13 +66,17 @@ impl io::MappingRecord for Record {
     }
 
     fn strand(self: &Self) -> char {
-        return if self.strand_a == self.strand_b { '+' } else { '-' };
+        return if self.strand_a == self.strand_b {
+            '+'
+        } else {
+            '-'
+        };
     }
-    
+
     fn read_b(self: &Self) -> String {
         self.read_b.clone()
-    } 
-    
+    }
+
     fn length_b(self: &Self) -> u64 {
         self.length_b
     }
@@ -83,13 +88,24 @@ impl io::MappingRecord for Record {
     fn end_b(self: &Self) -> u64 {
         self.end_b
     }
-    
+
+    fn length(self: &Self) -> u64 {
+        min(self.end_a - self.begin_a, self.end_b - self.begin_b)
+    }
+
+    fn len_to_end_a(self: &Self) -> u64 {
+        self.length_a - self.end_a
+    }
+    fn len_to_end_b(self: &Self) -> u64 {
+        self.length_b - self.end_b
+    }
+
     fn set_read_a(self: &mut Self, new_name: String) {
         self.read_a = new_name;
     }
     fn set_read_b(self: &mut Self, new_name: String) {
         self.read_b = new_name;
-    } 
+    }
 }
 
 type RecordInner = (String, String, f64, u64, char, u64, u64, u64, char, u64, u64, u64);

@@ -31,6 +31,3 @@ pub trait Modifier {
 
 pub mod renaming;
 pub use self::renaming::Renaming;
-
-
-
