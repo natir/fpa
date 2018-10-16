@@ -27,7 +27,7 @@ minimap2 long_read.fasta long_read.fasta | fpa -d | gzip - > long_read_dovetail.
 minimap2 long_read.fasta long_read.fasta | fpa -l 500 -L 2000 > match_between_500_2000.paf
 minimap2 long_read.fasta long_read.fasta | fpa -s -m read_1 > no_self_match_no_read_1.paf
 minimap2 long_read.fasta long_read.fasta | fpa -s -r rename.csv > no_self_match_renamed_read_1.paf
-minimap2 long_read.fasta long_read.fasta | fpa -s -r rename.csv -g gfa1 > no_self_match_renamed_read_1.gfa
+minimap2 long_read.fasta long_read.fasta | fpa -s -r rename.csv -o gfa1 > no_self_match_renamed_read_1.gfa
 ```
 
 ### Rename option
