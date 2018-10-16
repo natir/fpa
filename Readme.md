@@ -27,6 +27,7 @@ minimap2 long_read.fasta long_read.fasta | fpa -d | gzip - > long_read_dovetail.
 minimap2 long_read.fasta long_read.fasta | fpa -l 500 -L 2000 > match_between_500_2000.paf
 minimap2 long_read.fasta long_read.fasta | fpa -s -m read_1 > no_self_match_no_read_1.paf
 minimap2 long_read.fasta long_read.fasta | fpa -s -r rename.csv > no_self_match_renamed_read_1.paf
+minimap2 long_read.fasta long_read.fasta | fpa -s -r rename.csv -g gfa1 > no_self_match_renamed_read_1.gfa
 ```
 
 ### Rename option
@@ -42,6 +43,14 @@ original name2, new name2
 If the name of the read does not exist in the file it will not be replaced.
 
 If the path passed as parameter does not exist, the names will automatically be replaced by a number, a file like above example will be created.
+
+### Output mode
+
+You can get an output in gfa format with the -o option (--output-mode), two modes are available:
+- basic: the output and in the format that the input
+- gfa1: the output is in gfa1 format
+
+In gfa1 mode options -C and -I indicate that containments and internalmatches are included in the gfa (default option enabled), -c and -i indicate that containments and internalmatches should not be included.
 
 ## Rationale
 
@@ -80,7 +89,7 @@ conda install fpa
 ```
 git clone https://github.com/natir/fpa.git
 cd fpa
-git checkout v0.2
+git checkout v0.3
 
 cargo build
 cargo test
