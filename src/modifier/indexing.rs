@@ -30,27 +30,65 @@ use csv;
 use io;
 use modifier;
 
+#[derive(Clone, Debug, PartialEq)]
+pub enum IndexType {
+    Query,
+    Target,
+    Both,
+}
+
+impl From<&str> for IndexType {
+    fn from(index_type: &str) -> Self {
+        match index_type {
+            "query" => IndexType::Query,
+            "target" => IndexType::Target,
+            "both" => IndexType::Both,
+            _ => IndexType::Both,
+        }
+    }
+}
+
 pub struct Indexing {
+    index_type: IndexType,
     file_index_path: String,
     index_table: HashMap<String, Vec<(u64, u64)>>,
 }
 
 impl Indexing {
-    pub fn new(file_index_path: &str) -> Self {
+    pub fn new(file_index_path: &str, index_type: &str) -> Self {
         return Indexing {
             file_index_path: file_index_path.to_string(),
+            index_type: IndexType::from(index_type),
             index_table: HashMap::new(),
         };
     }
 }
 
-impl modifier::Modifier for Indexing {
-    fn run(self: &mut Self, r: &mut io::MappingRecord) {
+impl Indexing {
+    fn run_both(self: &mut Self, r: &mut io::MappingRecord) {
         if r.read_a() == r.read_b() {
             self.index_table.entry(r.read_a()).or_insert(Vec::new()).push(r.position());
         } else {
             self.index_table.entry(r.read_a()).or_insert(Vec::new()).push(r.position());
             self.index_table.entry(r.read_b()).or_insert(Vec::new()).push(r.position());
+        }        
+    }
+
+    fn run_query(self: &mut Self, r: &mut io::MappingRecord) {
+        self.index_table.entry(r.read_a()).or_insert(Vec::new()).push(r.position());
+    }
+
+    fn run_target(self: &mut Self, r: &mut io::MappingRecord) {
+        self.index_table.entry(r.read_b()).or_insert(Vec::new()).push(r.position());
+    }
+}
+
+impl modifier::Modifier for Indexing {
+    fn run(self: &mut Self, r: &mut io::MappingRecord) {
+        match self.index_type {
+            IndexType::Both => self.run_both(r),
+            IndexType::Query => self.run_query(r),
+            IndexType::Target => self.run_target(r),
         }
     }
     

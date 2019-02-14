@@ -30,7 +30,7 @@ use std::rc::Rc;
 use std::cell::RefCell;
 
 /* crates use */
-use clap::{App, Arg, ArgMatches};
+use clap::{App, Arg, ArgMatches, SubCommand};
 
 pub fn parser<'a>() -> ArgMatches<'a> {
     App::new("fpa")
@@ -120,13 +120,24 @@ pub fn parser<'a>() -> ArgMatches<'a> {
              .display_order(107)
              .help("Rename read with value in file passed as parameter if exist or by index store in file passed as parameter are empty")
              )
-        .arg(Arg::with_name("modifier-indexing")
-             .short("x")
-             .long("index")
-             .takes_value(true)
-             .display_order(108)
-             .help("Generate an index of paf for each read id list of all offset")
-             )
+        .subcommand(SubCommand::with_name("index")
+                    .about("control indexing of mapping in input")
+                    .arg(Arg::with_name("filename")
+                         .short("f")
+                         .long("filename")
+                         .takes_value(true)
+                         .display_order(108)
+                         .help("Path where index was write")
+                    )
+                    .arg(Arg::with_name("type")
+                         .short("t")
+                         .long("type")
+                         .takes_value(true).
+                         .default_value("both")
+                         .possible_values(&["query", "target", "both"])
+                         .help("Type of index, only reference read when it's query, target or both of them")
+                    )
+        )
         .arg(Arg::with_name("internal-match-threshold")
              .takes_value(true)
              .display_order(105)
@@ -159,12 +170,11 @@ pub fn parser<'a>() -> ArgMatches<'a> {
              .help("basic: output in same format as input, gfa1: output is in gfa1 overlap graph format (by default flag -I and -C are up)")
              .possible_values(&["basic", "gfa1"])
              )
-        .arg(Arg::with_name("output")
+        .arg(Arg::with_name("input")
              .takes_value(true)
              .default_value("-")
              )
-        .arg(Arg::with_name("input")
-             .multiple(true)
+        .arg(Arg::with_name("output")
              .takes_value(true)
              .default_value("-")
              )
@@ -180,9 +190,10 @@ pub fn generate_modifiers<'a>(matches: &ArgMatches) -> Vec<Rc<RefCell<modifier::
         modifiers.push(Rc::new(RefCell::new(modifier::Renaming::new(rename_file))));
     }
 
-    if matches.is_present("modifier-indexing") {
-        let rename_file = matches.value_of("modifier-indexing").unwrap();
-        modifiers.push(Rc::new(RefCell::new(modifier::Indexing::new(rename_file))));
+    if let Some(index_matches) = matches.subcommand_matches("index") {
+        let index_file = index_matches.value_of("filename").unwrap();
+        let index_type = index_matches.value_of("type").unwrap();
+        modifiers.push(Rc::new(RefCell::new(modifier::Indexing::new(index_file, index_type))));
     }
 
     return modifiers;

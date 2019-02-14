@@ -71,7 +71,7 @@ mod test {
                 nb_base         : 500,
                 mapping_quality : 255,
                 sam_field       : Vec::new(),
-                position        : 0,
+                position        : (0, 50),
             }
         }; 
     }
