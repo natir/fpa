@@ -34,7 +34,7 @@ use clap::{App, Arg, ArgMatches, SubCommand};
 
 pub fn parser<'a>() -> ArgMatches<'a> {
     App::new("fpa")
-        .version("0.3 Meowth")
+        .version("0.4 Nidoqueen")
         .author("Pierre Marijon <pierre.marijon@inria.fr>")
         .about("fpa take long read mapping information and filter them")
         .arg(Arg::with_name("delete_containment")
@@ -132,7 +132,7 @@ pub fn parser<'a>() -> ArgMatches<'a> {
                     .arg(Arg::with_name("type")
                          .short("t")
                          .long("type")
-                         .takes_value(true).
+                         .takes_value(true)
                          .default_value("both")
                          .possible_values(&["query", "target", "both"])
                          .help("Type of index, only reference read when it's query, target or both of them")

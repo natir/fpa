@@ -17,7 +17,7 @@ For internal match, containment, dovetails definition go read [algorithm 5 in mi
 ## Usage
 
 ```
-fpa <option> <output> <input>…
+fpa <option> <input> <output> <subcommand>
 ```
 
 By default input and output are stdin and stdout so you can use like this:
@@ -28,6 +28,7 @@ minimap2 long_read.fasta long_read.fasta | fpa -l 500 -L 2000 > match_between_50
 minimap2 long_read.fasta long_read.fasta | fpa -s -m read_1 > no_self_match_no_read_1.paf
 minimap2 long_read.fasta long_read.fasta | fpa -s -r rename.csv > no_self_match_renamed_read_1.paf
 minimap2 long_read.fasta long_read.fasta | fpa -s -r rename.csv -o gfa1 > no_self_match_renamed_read_1.gfa
+minimap2 long_read.fasta long_read.fasta | fpa -l 500 index -f match_upper_500_query_index.paf.idx -t query  > match_upper_500.paf
 ```
 
 ### Rename option
@@ -42,7 +43,19 @@ original name2, new name2
 
 If the name of the read does not exist in the file it will not be replaced.
 
-If the path passed as parameter does not exist, the names will automatically be replaced by a number, a file like above example will be created.
+If the path passed as parameter does not exist, the names will automatically be replaced by a number a file like above example will be created.
+
+### Index option
+
+fpa can build an index of offset of the records in the file where a reads appears. 
+
+The index file looks like this:
+```
+read_id1, start_of_range_1:end_of_range_1; start_of_range_2:end_of_range_2;…
+read_id2, start_of_range_1:end_of_range_1; start_of_range_2:end_of_range_2;…
+```
+
+fpa can index read only when it's query (first read in record) or target (second read in record) or both of them.
 
 ### Output mode
 
