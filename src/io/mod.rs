@@ -34,6 +34,7 @@ pub trait MappingRecord {
     fn length_b(self: &Self) -> u64;
     fn begin_b(self: &Self) -> u64;
     fn end_b(self: &Self) -> u64;
+    fn position(self: &Self) -> (u64, u64);
 
     fn length(self: &Self) -> u64;
 

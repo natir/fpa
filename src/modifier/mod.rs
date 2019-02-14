@@ -31,3 +31,6 @@ pub trait Modifier {
 
 pub mod renaming;
 pub use self::renaming::Renaming;
+
+pub mod indexing;
+pub use self::indexing::Indexing;

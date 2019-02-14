@@ -37,7 +37,7 @@ pub struct Record {
     pub read_a: String,
     pub read_b: String,
     pub error: f64,
-    pub shared_min_mers: u64,
+    pub shared_min_mers: f64,
     pub strand_a: char,
     pub begin_a: u64,
     pub end_a: u64,
@@ -46,6 +46,7 @@ pub struct Record {
     pub begin_b: u64,
     pub end_b: u64,
     pub length_b: u64,
+    pub position: (u64, u64),
 }
 
 impl io::MappingRecord for Record {
@@ -88,11 +89,15 @@ impl io::MappingRecord for Record {
     fn end_b(self: &Self) -> u64 {
         self.end_b
     }
-
+    
+    fn position(self: &Self) -> (u64, u64) {
+        self.position
+    }
+    
     fn length(self: &Self) -> u64 {
         min(self.end_a - self.begin_a, self.end_b - self.begin_b)
     }
-
+    
     fn len_to_end_a(self: &Self) -> u64 {
         self.length_a - self.end_a
     }
@@ -108,7 +113,7 @@ impl io::MappingRecord for Record {
     }
 }
 
-type RecordInner = (String, String, f64, u64, char, u64, u64, u64, char, u64, u64, u64);
+type RecordInner = (String, String, f64, f64, char, u64, u64, u64, char, u64, u64, u64);
 
 pub struct Records<'a, R: 'a + std::io::Read> {
     inner: csv::DeserializeRecordsIter<'a, R, RecordInner>,
@@ -118,6 +123,7 @@ impl<'a, R: std::io::Read> Iterator for Records<'a, R> {
     type Item = csv::Result<Record>;
 
     fn next(&mut self) -> Option<csv::Result<Record>> {
+        let position = self.inner.reader().position().byte();
         self.inner.next().map(|res| {
             res.map(|(read_a,
               read_b,
@@ -131,6 +137,8 @@ impl<'a, R: std::io::Read> Iterator for Records<'a, R> {
               begin_b,
               end_b,
               length_b)| {
+                let new_position = self.inner.reader().position().byte();
+                    
                 Record {
                     read_a,
                     read_b,
@@ -144,6 +152,7 @@ impl<'a, R: std::io::Read> Iterator for Records<'a, R> {
                     begin_b,
                     end_b,
                     length_b,
+                    position: (position, new_position),
                 }
             })
         })
@@ -227,7 +236,7 @@ mod test {
     const READ_A: &'static [&str; 2] = &["1", "1"];
     const READ_B: &'static [&str; 2] = &["2", "3"];
     const ERROR: &'static [f64; 2] = &[0.1, 0.1];
-    const SHARED_MIN_MERS: &'static [u64; 2] = &[2, 2];
+    const SHARED_MIN_MERS: &'static [f64; 2] = &[2.0, 2.0];
     const STRAND_A: &'static [char; 2] = &['0', '0'];
     const STRAND_B: &'static [char; 2] = &['0', '0'];
     const BEGIN_A: &'static [u64; 2] = &[100, 550];

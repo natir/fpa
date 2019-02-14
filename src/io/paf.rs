@@ -18,7 +18,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*/
+ */
 
 /* local use */
 use io;
@@ -47,6 +47,7 @@ pub struct Record {
     pub nb_base: u64,
     pub mapping_quality: u64,
     pub sam_field: Vec<String>,
+    pub position: (u64, u64),
 }
 
 impl io::MappingRecord for Record {
@@ -86,13 +87,18 @@ impl io::MappingRecord for Record {
         self.end_b
     }
 
+    fn position(self: &Self) -> (u64, u64) {
+        self.position
+    }
+
     fn length(self: &Self) -> u64 {
         min(self.end_a - self.begin_a, self.end_b - self.begin_b)
     }
-
+    
     fn len_to_end_a(self: &Self) -> u64 {
         self.length_a - self.end_a
     }
+    
     fn len_to_end_b(self: &Self) -> u64 {
         self.length_b - self.end_b
     }
@@ -115,19 +121,21 @@ impl<'a, R: std::io::Read> Iterator for Records<'a, R> {
     type Item = csv::Result<Record>;
 
     fn next(&mut self) -> Option<csv::Result<Record>> {
+        let position = self.inner.reader().position().byte();
         self.inner.next().map(|res| {
             res.map(|(read_a,
-              length_a,
-              begin_a,
-              end_a,
-              strand,
-              read_b,
-              length_b,
-              begin_b,
-              end_b,
-              nb_match_base,
-              nb_base,
-              mapping_quality_and_sam)| {
+                      length_a,
+                      begin_a,
+                      end_a,
+                      strand,
+                      read_b,
+                      length_b,
+                      begin_b,
+                      end_b,
+                      nb_match_base,
+                      nb_base,
+                      mapping_quality_and_sam,
+            )| {
                 let mapping_quality = mapping_quality_and_sam[0].parse::<u64>().unwrap();
 
                 let mut sam_field = Vec::new();
@@ -135,6 +143,7 @@ impl<'a, R: std::io::Read> Iterator for Records<'a, R> {
                     sam_field = mapping_quality_and_sam[1..].to_vec();
                 }
 
+                let new_position = self.inner.reader().position().byte();
                 Record {
                     read_a,
                     length_a,
@@ -149,6 +158,7 @@ impl<'a, R: std::io::Read> Iterator for Records<'a, R> {
                     nb_base,
                     mapping_quality,
                     sam_field,
+                    position:  (position, new_position),
                 }
             })
         })

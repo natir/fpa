@@ -120,6 +120,13 @@ pub fn parser<'a>() -> ArgMatches<'a> {
              .display_order(107)
              .help("Rename read with value in file passed as parameter if exist or by index store in file passed as parameter are empty")
              )
+        .arg(Arg::with_name("modifier-indexing")
+             .short("x")
+             .long("index")
+             .takes_value(true)
+             .display_order(108)
+             .help("Generate an index of paf for each read id list of all offset")
+             )
         .arg(Arg::with_name("internal-match-threshold")
              .takes_value(true)
              .display_order(105)
@@ -171,6 +178,11 @@ pub fn generate_modifiers<'a>(matches: &ArgMatches) -> Vec<Rc<RefCell<modifier::
     if matches.is_present("modifier-renaming") {
         let rename_file = matches.value_of("modifier-renaming").unwrap();
         modifiers.push(Rc::new(RefCell::new(modifier::Renaming::new(rename_file))));
+    }
+
+    if matches.is_present("modifier-indexing") {
+        let rename_file = matches.value_of("modifier-indexing").unwrap();
+        modifiers.push(Rc::new(RefCell::new(modifier::Indexing::new(rename_file))));
     }
 
     return modifiers;
