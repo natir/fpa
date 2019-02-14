@@ -29,6 +29,7 @@ minimap2 long_read.fasta long_read.fasta | fpa -s -m read_1 > no_self_match_no_r
 minimap2 long_read.fasta long_read.fasta | fpa -s -r rename.csv > no_self_match_renamed_read_1.paf
 minimap2 long_read.fasta long_read.fasta | fpa -s -r rename.csv -o gfa1 > no_self_match_renamed_read_1.gfa
 minimap2 long_read.fasta long_read.fasta | fpa -l 500 index -f match_upper_500_query_index.paf.idx -t query  > match_upper_500.paf
+minimap2 long_read.fasta long_read.fasta | fpa -l 500 - match_upper_500.paf index -f match_upper_500_query_index.paf.idx -t query
 ```
 
 ### Rename option
