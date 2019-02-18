@@ -73,7 +73,7 @@ This soft can be replace by a simple awk, bash, python, ~perl~, {your favorite l
 
 ## Requirements
 
-- [Rust](https://www.rust-lang.org/) in stable channel
+- [Rust](https://www.rust-lang.org/) >= 1.32
 - libgz
 - libbzip2
 - liblzma
