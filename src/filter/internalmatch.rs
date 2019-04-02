@@ -52,7 +52,7 @@ impl filter::Filter for InternalMatch {
 
         let maplen = max(r.end_a() - r.begin_a(), r.end_b() - r.begin_b());
 
-        let test = overhang > (maplen as f64 * self.internal_threshold) as u64;
+        let test = overhang > min(1000, (maplen as f64 * self.internal_threshold) as u64);
 
         return if self.reverse { !test } else { test };
     }
