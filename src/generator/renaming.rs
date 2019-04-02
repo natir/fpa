@@ -30,7 +30,7 @@ use csv;
 
 /* project use */
 use io;
-use modifier;
+use generator;
 
 pub struct Renaming {
     file_rename_path: String,
@@ -76,7 +76,7 @@ impl Renaming {
             let key = r.read_a();
             r.set_read_a(self.rename_table.get(&key).unwrap().to_string());
         }
-
+        
         if self.rename_table.contains_key(&r.read_b()) {
             let key = r.read_b();
             r.set_read_b(self.rename_table.get(&key).unwrap().to_string());
@@ -91,7 +91,7 @@ impl Renaming {
         }
 
         r.set_read_a(self.rename_table.get(&key).unwrap().to_string());
-
+        
         key = r.read_b();
         if !self.rename_table.contains_key(&key) {
             self.rename_table.insert(r.read_b(), self.index.to_string());
@@ -101,7 +101,7 @@ impl Renaming {
     }
 }
 
-impl modifier::Modifier for Renaming {
+impl generator::Modifier for Renaming {
     fn run(self: &mut Self, r: &mut io::MappingRecord) {
         if self.index_mode {
             self.run_no_index(r);
@@ -110,11 +110,12 @@ impl modifier::Modifier for Renaming {
         }
     }
 
-    fn write(self: &Self) {
+    fn write(self: &mut Self) {
         if self.index != 0 {
             let mut writer = csv::Writer::from_path(&self.file_rename_path).expect(
                 "Can't create file to write renaming file",
             );
+            
             for (key, val) in &self.rename_table {
                 writer.write_record(&[key, val]).expect(
                     "Error durring write renaming file",

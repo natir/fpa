@@ -18,35 +18,49 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*/
+ */
 
-pub mod paf;
-pub mod mhap;
-pub mod gfa;
+/* project use */
+use io;
+use filter;
 
-pub trait MappingRecord {
-    fn read_a(self: &Self) -> String;
-    fn length_a(self: &Self) -> u64;
-    fn begin_a(self: &Self) -> u64;
-    fn end_a(self: &Self) -> u64;
-    fn strand(self: &Self) -> char;
-    fn read_b(self: &Self) -> String;
-    fn length_b(self: &Self) -> u64;
-    fn begin_b(self: &Self) -> u64;
-    fn end_b(self: &Self) -> u64;
-    fn position(self: &Self) -> (u64, u64);
-    fn set_position(self: &mut Self, p: (u64, u64));
-    
-    fn length(self: &Self) -> u64;
+use cli::Filters;
 
-    fn len_to_end_a(self: &Self) -> u64;
-    fn len_to_end_b(self: &Self) -> u64;
-
-    fn set_read_a(self: &mut Self, new_name: String);
-    fn set_read_b(self: &mut Self, new_name: String);
+pub struct Drop {
+    filters: Vec<Box<filter::Filter>>,
+    internal_threshold: f64,
 }
 
-pub enum MappingFormat {
-    Paf,
-    Mhap,
+impl Drop {
+    pub fn new(internal_match: f64, matches: &std::collections::HashMap<String, clap::ArgMatches>) -> Self {
+        let filters = Vec::new();
+        let mut d = Drop {
+            filters: filters,
+            internal_threshold: internal_match,
+        };
+
+        if let Some(drop) = matches.get("drop") {
+            d.generate(drop);
+        }
+        
+        return d;
+    }
+}
+
+impl Filters for Drop {
+    fn pass(&self, r: &io::MappingRecord) -> bool {
+        return if self.filters.is_empty() {
+            true
+        } else {
+            !self.filters.iter().any(|ref x| x.run(r))
+        };
+    }
+    
+    fn internal_match(&self) -> f64 {
+        self.internal_threshold
+    }
+    
+    fn add_filter(&mut self, f: Box<filter::Filter>) {
+        self.filters.push(f);
+    }
 }

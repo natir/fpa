@@ -43,44 +43,38 @@ extern crate lazy_static;
 mod io;
 mod cli;
 mod file;
-mod work;
+//mod work;
 mod filter;
-mod modifier;
+mod generator;
+
+use cli::Filters;
+use io::MappingRecord;
+use generator::Modifier;
 
 fn main() {
 
-    let matches = cli::parser();
+    let mut app = cli::app();
+    let matches = match app.get_matches_from_safe_borrow(std::env::args()) {
+        Ok(x) => x,
+        Err(x) => x.exit(),
+    };
 
+    let subcmd = cli::get_subcmd(&mut app);
+    
     /* Manage input and output file */
-    let mut compression: file::CompressionFormat = file::CompressionFormat::No;
-    let mut inputs: Vec<Box<std::io::Read>> = Vec::new();
+    let compression: file::CompressionFormat;
+    let input: Box<std::io::Read>;
+    let (input, compression) = file::get_input(matches.value_of("input").unwrap());
 
     let format = if matches.is_present("format") {
         match matches.value_of("format").unwrap() {
-            "paf" => work::InOutFormat::Paf,
-            "mhap" => work::InOutFormat::Mhap,
-            _ => work::InOutFormat::Paf,
+            "paf" => io::MappingFormat::Paf,
+            "mhap" => io::MappingFormat::Mhap,
+            _ => io::MappingFormat::Paf,
         }
     } else {
-        work::InOutFormat::Paf
+        io::MappingFormat::Paf
     };
-
-    let mode = if matches.is_present("mode") {
-        match matches.value_of("mode").unwrap() {
-            "basic" => work::Mode::Basic,
-            "gfa1" => work::Mode::Gfa1,
-            //"gfa2" => work::Mode::Gfa2, // Not yet support
-            _ => work::Mode::Basic,
-        }
-    } else {
-        work::Mode::Basic
-    };
-
-    for input_name in matches.values_of("input").unwrap() {
-        let tmp = file::get_input(input_name);
-        inputs.push(tmp.0);
-        compression = tmp.1;
-    }
 
     let out_compression = file::choose_compression(
         compression,
@@ -88,22 +82,52 @@ fn main() {
         matches.value_of("compression-out").unwrap_or("no"),
     );
 
-    let mut output: Box<std::io::Write> =
-        file::get_output(matches.value_of("output").unwrap(), out_compression);
+    let mut output: std::io::BufWriter<Box<std::io::Write>> =
+        std::io::BufWriter::new(file::get_output(matches.value_of("output").unwrap(), out_compression));
 
-    /* Manage filter */
-    let filters = cli::generate_filters(&matches);
+    let internal_match_threshold = matches.value_of("internal-match-threshold").unwrap().parse::<f64>().unwrap();
 
-    /* Manage modifier */
-    let mut modifiers = cli::generate_modifiers(&matches);
+    let mut writer = io::paf::Writer::new(output);
+    let mut reader = io::paf::Reader::new(input);
+    let drop = cli::Drop::new(internal_match_threshold, &subcmd);
+    let keep = cli::Keep::new(internal_match_threshold, &subcmd);
+    let mut modifier = cli::Modifier::new(internal_match_threshold, &subcmd);
 
-    work::run(
-        inputs,
-        &mut output,
-        &filters,
-        &mut modifiers,
-        &matches,
-        format,
-        mode,
-    );
+    let mut index = if let Some(m) = subcmd.get("index") {
+        generator::Indexing::new(m.value_of("filename").unwrap(), m.value_of("type").unwrap())
+    } else {
+        generator::Indexing::empty()
+    };
+
+    let mut position = 0;
+    for result in reader.records() {
+        let mut record = result.expect("Trouble during read of input mapping");
+
+        // keep
+        if !keep.pass(&record) {
+            continue
+        }
+
+        // drop
+        if !drop.pass(&record) {
+            continue
+        }
+
+        // modifier
+        modifier.pass(&mut record);
+        
+        let new_position = position + writer.write(&record)
+            .expect("Trouble during write of output");
+        
+        record.set_position((position, new_position));
+
+        index.run(&mut record);
+
+        position = new_position;
+    }
+
+    // close modifier
+    modifier.write();
+
+    index.write();
 }

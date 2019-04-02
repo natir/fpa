@@ -20,33 +20,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-pub mod paf;
-pub mod mhap;
-pub mod gfa;
 
-pub trait MappingRecord {
-    fn read_a(self: &Self) -> String;
-    fn length_a(self: &Self) -> u64;
-    fn begin_a(self: &Self) -> u64;
-    fn end_a(self: &Self) -> u64;
-    fn strand(self: &Self) -> char;
-    fn read_b(self: &Self) -> String;
-    fn length_b(self: &Self) -> u64;
-    fn begin_b(self: &Self) -> u64;
-    fn end_b(self: &Self) -> u64;
-    fn position(self: &Self) -> (u64, u64);
-    fn set_position(self: &mut Self, p: (u64, u64));
-    
-    fn length(self: &Self) -> u64;
+/* std use */
 
-    fn len_to_end_a(self: &Self) -> u64;
-    fn len_to_end_b(self: &Self) -> u64;
+/* crate use */
 
-    fn set_read_a(self: &mut Self, new_name: String);
-    fn set_read_b(self: &mut Self, new_name: String);
+/* projet use */
+use io;
+use generator;
+
+pub struct Gfa1 {
+    gfa_path: String,
+    gfa_object: io::gfa::Gfa1,
 }
 
-pub enum MappingFormat {
-    Paf,
-    Mhap,
+impl Gfa1 {
+    pub fn new(gfa_path: String, keep_internal: bool, keep_containment: bool, internal_threshold: f64) -> Self {
+        Gfa1 {
+            gfa_path: gfa_path,
+            gfa_object: io::gfa::Gfa1::new(keep_internal, keep_containment, internal_threshold),
+        }
+    }
+}
+
+impl generator::Modifier for Gfa1 {
+    fn run(self: &mut Self, r: &mut io::MappingRecord) {
+        self.gfa_object.add(r);
+    }
+
+    fn write(self: &mut Self) {
+        let mut writer = std::fs::File::create(&self.gfa_path).unwrap();
+        self.gfa_object.write(&mut writer);
+    }
 }

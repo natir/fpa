@@ -30,20 +30,19 @@ use std::cmp::{min, max};
 
 pub struct InternalMatch {
     internal_threshold: f64,
-    reverse: bool,
 }
 
 impl InternalMatch {
-    pub fn new(internal_threshold: f64, reverse: bool) -> Self {
+    pub fn new(internal_threshold: f64) -> Self {
         InternalMatch {
             internal_threshold: internal_threshold,
-            reverse: reverse,
         }
     }
 }
 
 impl filter::Filter for InternalMatch {
     fn run(self: &Self, r: &io::MappingRecord) -> bool {
+
         let overhang = if r.strand() == '+' {
             min(r.begin_a(), r.begin_b()) + min(r.length_a() - r.end_a(), r.length_b() - r.end_b())
         } else {
@@ -52,9 +51,7 @@ impl filter::Filter for InternalMatch {
 
         let maplen = max(r.end_a() - r.begin_a(), r.end_b() - r.begin_b());
 
-        let test = overhang > min(1000, (maplen as f64 * self.internal_threshold) as u64);
-
-        return if self.reverse { !test } else { test };
+        return overhang > min(1000, (maplen as f64 * self.internal_threshold) as u64);
     }
 }
 
@@ -87,23 +84,15 @@ mod test {
 
     #[test]
     fn positif() {
-        let mut nm = InternalMatch::new(0.8, false);
+        let nm = InternalMatch::new(0.8);
 
         assert_eq!(nm.run(&*RECORD), true);
-
-        nm = InternalMatch::new(0.8, true);
-
-        assert_eq!(nm.run(&*RECORD), false);
     }
 
     #[test]
     fn negatif() {
-        let mut nm = InternalMatch::new(0.8, false);
+        let nm = InternalMatch::new(0.8);
 
         assert_ne!(nm.run(&*RECORD), false);
-
-        nm = InternalMatch::new(0.8, true);
-
-        assert_ne!(nm.run(&*RECORD), true);
     }
 }

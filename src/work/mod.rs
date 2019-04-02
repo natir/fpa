@@ -22,7 +22,7 @@ SOFTWARE.
 
 /* project use */
 use filter;
-use modifier;
+use generator;
 
 /* std use */
 use std;

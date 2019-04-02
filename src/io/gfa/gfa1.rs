@@ -58,13 +58,13 @@ impl Gfa1 {
             keep_containment: keep_containment,
             graph: Graph::new(),
             containments: HashMap::new(),
-            test_containment: filter::Containment::new(internal_threshold, false),
-            test_internalmatch: filter::InternalMatch::new(internal_threshold, false),
+            test_containment: filter::Containment::new(internal_threshold),
+            test_internalmatch: filter::InternalMatch::new(internal_threshold),
             node2index: HashMap::new(),
         }
     }
 
-    pub fn add<Record: Clone + io::MappingRecord>(self: &mut Self, record: Box<Record>) {
+    pub fn add(self: &mut Self, record: &io::MappingRecord) {
         if self.test_internalmatch.run(&*record) {
             self.add_internalmatch(record);
         } else if self.test_containment.run(&*record) {
@@ -74,7 +74,7 @@ impl Gfa1 {
         }
     }
 
-    fn add_containment<Record: Clone + io::MappingRecord>(self: &mut Self, record: Box<Record>) {
+    fn add_containment(self: &mut Self, record: &io::MappingRecord) {
         if record.strand() == '+' {
             if record.begin_a() <= record.begin_b() &&
                 record.len_to_end_a() < record.len_to_end_b()
@@ -162,13 +162,13 @@ impl Gfa1 {
         }
     }
 
-    fn add_internalmatch<Record: Clone + io::MappingRecord>(self: &mut Self, record: Box<Record>) {
+    fn add_internalmatch(self: &mut Self, record: &io::MappingRecord) {
         if self.keep_internal {
             self.add_dovetails(record);
         }
     }
 
-    fn add_dovetails<Record: Clone + io::MappingRecord>(self: &mut Self, record: Box<Record>) {
+    fn add_dovetails(self: &mut Self, record: &io::MappingRecord) {
         let node_a = self.add_node((record.read_a(), record.length_a()));
         let node_b = self.add_node((record.read_b(), record.length_b()));
 

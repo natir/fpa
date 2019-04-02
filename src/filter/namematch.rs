@@ -32,23 +32,19 @@ use regex;
 
 pub struct NameMatch {
     regex: regex::Regex,
-    reverse: bool,
 }
 
 impl NameMatch {
-    pub fn new(regex: &str, reverse: bool) -> Self {
+    pub fn new(regex: &str) -> Self {
         NameMatch {
             regex: regex::Regex::new(regex).expect("Error in regex build"),
-            reverse: reverse,
         }
     }
 }
 
 impl filter::Filter for NameMatch {
     fn run(self: &Self, r: &io::MappingRecord) -> bool {
-        let test = self.regex.is_match(&r.read_a()) || self.regex.is_match(&r.read_b());
-
-        return if self.reverse { !test } else { test };
+        return self.regex.is_match(&r.read_a()) || self.regex.is_match(&r.read_b());
     }
 }
 
@@ -81,24 +77,16 @@ mod test {
 
     #[test]
     fn positif() {
-        let mut nm = NameMatch::new("read_1", false);
+        let nm = NameMatch::new("read_1");
 
         assert_eq!(nm.run(&*RECORD), true);
-
-        nm = NameMatch::new("read_1", true);
-
-        assert_eq!(nm.run(&*RECORD), false);
     }
 
     #[test]
     fn negatif() {
-        let mut nm = NameMatch::new("read_1", false);
+        let nm = NameMatch::new("read_1");
 
         assert_ne!(nm.run(&*RECORD), false);
-
-        nm = NameMatch::new("read_1", true);
-
-        assert_ne!(nm.run(&*RECORD), true);
     }
 
 }

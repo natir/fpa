@@ -18,19 +18,50 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*/
+ */
 
-
+/* project use */
 use io;
+use filter;
 
-pub trait Modifier {
-    fn run(self: &mut Self, r: &mut io::MappingRecord);
+use cli::Filters;
 
-    fn write(self: &Self);
+pub struct Keep {
+    filters: Vec<Box<filter::Filter>>,
+    internal_threshold: f64,
 }
 
-pub mod renaming;
-pub use self::renaming::Renaming;
+impl Keep {
+    pub fn new(internal_match: f64, matches: &std::collections::HashMap<String, clap::ArgMatches>) -> Self {
+        let filters = Vec::new();
+        let mut k = Keep {
+            filters: filters,
+            internal_threshold: internal_match,
+        };
 
-pub mod indexing;
-pub use self::indexing::Indexing;
+        if let Some(keep) = matches.get("keep") {
+            k.generate(keep);
+        }
+        
+        return k;
+    }
+}
+
+impl Filters for Keep {
+    fn pass(&self, r: &io::MappingRecord) -> bool {
+        return if self.filters.is_empty() {
+            return true
+        } else {
+            self.filters.iter().all(|ref x| x.run(r))
+        };
+    }
+
+    fn internal_match(&self) -> f64 {
+        self.internal_threshold
+    }
+    
+    fn add_filter(&mut self, f: Box<filter::Filter>) {
+        self.filters.push(f);
+    }
+}
+

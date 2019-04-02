@@ -28,7 +28,7 @@ use csv;
 
 /* project use */
 use io;
-use modifier;
+use generator;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum IndexType {
@@ -56,15 +56,21 @@ pub struct Indexing {
 
 impl Indexing {
     pub fn new(file_index_path: &str, index_type: &str) -> Self {
-        return Indexing {
+        Indexing {
             file_index_path: file_index_path.to_string(),
             index_type: IndexType::from(index_type),
             index_table: HashMap::new(),
-        };
+        }
     }
-}
 
-impl Indexing {
+    pub fn empty() -> Self {
+        Indexing {
+            file_index_path: "".to_string(),
+            index_type: IndexType::Both,
+            index_table: HashMap::new(),
+        }
+    }
+
     fn run_both(self: &mut Self, r: &mut io::MappingRecord) {
         if r.read_a() == r.read_b() {
             self.index_table.entry(r.read_a()).or_insert(Vec::new()).push(r.position());
@@ -83,8 +89,12 @@ impl Indexing {
     }
 }
 
-impl modifier::Modifier for Indexing {
+impl generator::Modifier for Indexing {
     fn run(self: &mut Self, r: &mut io::MappingRecord) {
+        if self.file_index_path == "".to_string() {
+            return ;
+        }
+        
         match self.index_type {
             IndexType::Both => self.run_both(r),
             IndexType::Query => self.run_query(r),
@@ -92,20 +102,24 @@ impl modifier::Modifier for Indexing {
         }
     }
     
-    fn write(self: &Self) {
+    fn write(self: &mut Self) {
+        if self.file_index_path == "".to_string() {
+            return ;
+        }
+
         let mut writer = csv::Writer::from_path(&self.file_index_path).expect("Can't create file to write index");
 
         for (key, val) in &self.index_table {            
             let mut iterator = val.iter();
             let mut position = iterator.next().unwrap().clone();
-
+            
             let mut positions: Vec<(u64, u64)> = Vec::new();
             for v in iterator {
 
                 if v.0 - position.1 > 1 {
                     positions.push(position);
                     position = v.clone();
-                }
+                } 
                 else {
                     position.1 = v.1;
                 }

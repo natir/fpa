@@ -28,9 +28,7 @@ use csv;
 
 /* standard use */
 use std;
-use std::fs;
 use std::cmp::min;
-use std::path::Path;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Record {
@@ -89,6 +87,10 @@ impl io::MappingRecord for Record {
 
     fn position(self: &Self) -> (u64, u64) {
         self.position
+    }
+
+    fn set_position(self: &mut Self, p: (u64, u64)) {
+        self.position = p;
     }
 
     fn length(self: &Self) -> u64 {
@@ -191,15 +193,7 @@ pub struct Writer<W: std::io::Write> {
     inner: csv::Writer<W>,
 }
 
-impl Writer<fs::File> {
-    /// Write to a given file path in given format.
-    #[allow(dead_code)]
-    pub fn to_file<P: AsRef<Path>>(path: P) -> std::io::Result<Self> {
-        fs::File::create(path).map(|f| Writer::new(f))
-    }
-}
-
-impl<W: std::io::Write> Writer<W> {
+impl<W: std::io::Write> Writer< W> {
     /// Write to a given writer.
     pub fn new(writer: W) -> Self {
         Writer {
@@ -212,7 +206,32 @@ impl<W: std::io::Write> Writer<W> {
     }
 
     /// Write a given GFF record.
-    pub fn write(&mut self, record: &Record) -> csv::Result<()> {
+    pub fn write(&mut self, record: &Record) -> csv::Result<u64> {
+        let buffer: Vec<u8> = Vec::new();
+        let mut wrapper = csv::WriterBuilder::new()
+            .delimiter(b'\t')
+            .has_headers(false)
+            .flexible(true)
+            .from_writer(buffer);
+        
+        wrapper.serialize((
+            &record.read_a,
+            record.length_a,
+            record.begin_a,
+            record.end_a,
+            record.strand,
+            &record.read_b,
+            record.length_b,
+            record.begin_b,
+            record.end_b,
+            record.nb_match_base,
+            record.nb_base,
+            record.mapping_quality,
+            &record.sam_field,
+        ))?;
+
+        let nb_bytes = wrapper.into_inner().unwrap().len() as u64;
+        
         self.inner.serialize((
             &record.read_a,
             record.length_a,
@@ -227,7 +246,10 @@ impl<W: std::io::Write> Writer<W> {
             record.nb_base,
             record.mapping_quality,
             &record.sam_field,
-        ))
+        ))?;
+
+        
+        return Ok(nb_bytes);
     }
 }
 
