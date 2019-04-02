@@ -43,44 +43,30 @@ extern crate lazy_static;
 mod io;
 mod cli;
 mod file;
-mod work;
+//mod work;
 mod filter;
-mod modifier;
+//mod generator;
+
+use cli::Filters;
 
 fn main() {
 
     let matches = cli::parser();
 
     /* Manage input and output file */
-    let mut compression: file::CompressionFormat = file::CompressionFormat::No;
-    let mut inputs: Vec<Box<std::io::Read>> = Vec::new();
+    let compression: file::CompressionFormat;
+    let input: Box<std::io::Read>;
+    let (input, compression) = file::get_input(matches.value_of("input").unwrap());
 
     let format = if matches.is_present("format") {
         match matches.value_of("format").unwrap() {
-            "paf" => work::InOutFormat::Paf,
-            "mhap" => work::InOutFormat::Mhap,
-            _ => work::InOutFormat::Paf,
+            "paf" => io::MappingFormat::Paf,
+            "mhap" => io::MappingFormat::Mhap,
+            _ => io::MappingFormat::Paf,
         }
     } else {
-        work::InOutFormat::Paf
+        io::MappingFormat::Paf
     };
-
-    let mode = if matches.is_present("mode") {
-        match matches.value_of("mode").unwrap() {
-            "basic" => work::Mode::Basic,
-            "gfa1" => work::Mode::Gfa1,
-            //"gfa2" => work::Mode::Gfa2, // Not yet support
-            _ => work::Mode::Basic,
-        }
-    } else {
-        work::Mode::Basic
-    };
-
-    for input_name in matches.values_of("input").unwrap() {
-        let tmp = file::get_input(input_name);
-        inputs.push(tmp.0);
-        compression = tmp.1;
-    }
 
     let out_compression = file::choose_compression(
         compression,
@@ -91,19 +77,27 @@ fn main() {
     let mut output: Box<std::io::Write> =
         file::get_output(matches.value_of("output").unwrap(), out_compression);
 
-    /* Manage filter */
-    let filters = cli::generate_filters(&matches);
+    let mut writer = io::paf::Writer::new(output);
+    let mut reader = io::paf::Reader::new(input);
+    let drop = cli::Drop::new(&matches);
+    let keep = cli::Keep::new(&matches);
+    for result in reader.records() {
+        let mut record = result.expect("Trouble during read of input mapping");
 
-    /* Manage modifier */
-    let mut modifiers = cli::generate_modifiers(&matches);
+        // keep
+        if !keep.pass(&record) {
+            continue
+        }
 
-    work::run(
-        inputs,
-        &mut output,
-        &filters,
-        &mut modifiers,
-        &matches,
-        format,
-        mode,
-    );
+        // drop
+        if !drop.pass(&record) {
+            continue
+        }
+        
+        // modifier
+        
+        writer.write(&record).expect("Trouble during write of output")
+    }
+
+    // close modifier
 }

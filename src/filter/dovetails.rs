@@ -29,23 +29,19 @@ use filter;
 
 pub struct Dovetails {
     internal_threshold: f64,
-    reverse: bool,
 }
 
 impl Dovetails {
-    pub fn new(internal_threshold: f64, reverse: bool) -> Self {
+    pub fn new(internal_threshold: f64) -> Self {
         Dovetails {
             internal_threshold: internal_threshold,
-            reverse: reverse,
         }
     }
 }
 
 impl filter::Filter for Dovetails {
     fn run(self: &Self, r: &io::MappingRecord) -> bool {
-        let test = !filter::Containment::new(self.internal_threshold, false).run(r);
-
-        return if self.reverse { !test } else { test };
+        return !filter::Containment::new(self.internal_threshold).run(r);
     }
 }
 
@@ -78,23 +74,15 @@ mod test {
 
     #[test]
     fn positif() {
-        let mut nm = Dovetails::new(0.8, false);
+        let nm = Dovetails::new(0.8);
 
         assert_eq!(nm.run(&*RECORD), true);
-
-        nm = Dovetails::new(0.8, true);
-
-        assert_eq!(nm.run(&*RECORD), false);
     }
 
     #[test]
     fn negatif() {
-        let mut nm = Dovetails::new(0.8, false);
+        let nm = Dovetails::new(0.8);
 
         assert_ne!(nm.run(&*RECORD), false);
-
-        nm = Dovetails::new(0.8, true);
-
-        assert_ne!(nm.run(&*RECORD), true);
     }
 }

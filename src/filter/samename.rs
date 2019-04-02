@@ -28,20 +28,17 @@ use filter;
 /* standard use */
 
 pub struct SameName {
-    reverse: bool,
 }
 
 impl SameName {
-    pub fn new(reverse: bool) -> Self {
-        SameName { reverse: reverse }
+    pub fn new() -> Self {
+        SameName { }
     }
 }
 
 impl filter::Filter for SameName {
     fn run(self: &Self, r: &io::MappingRecord) -> bool {
-        let test = r.read_a() == r.read_b();
-
-        return if self.reverse { !test } else { test };
+        return r.read_a() == r.read_b();
     }
 }
 
@@ -74,24 +71,15 @@ mod test {
 
     #[test]
     fn positif() {
-        let mut nm = SameName::new(false);
-        println!("{} {}", nm.run(&*RECORD), true);
+        let mut nm = SameName::new();
 
         assert_eq!(nm.run(&*RECORD), true);
-
-        nm = SameName::new(true);
-
-        assert_eq!(nm.run(&*RECORD), false);
     }
 
     #[test]
     fn negatif() {
-        let mut nm = SameName::new(false);
+        let mut nm = SameName::new();
 
         assert_ne!(nm.run(&*RECORD), false);
-
-        nm = SameName::new(true);
-
-        assert_ne!(nm.run(&*RECORD), true);
     }
 }

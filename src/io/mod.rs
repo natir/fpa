@@ -22,7 +22,7 @@ SOFTWARE.
 
 pub mod paf;
 pub mod mhap;
-pub mod gfa;
+//pub mod gfa;
 
 pub trait MappingRecord {
     fn read_a(self: &Self) -> String;
@@ -43,4 +43,9 @@ pub trait MappingRecord {
 
     fn set_read_a(self: &mut Self, new_name: String);
     fn set_read_b(self: &mut Self, new_name: String);
+}
+
+pub enum MappingFormat {
+    Paf,
+    Mhap,
 }

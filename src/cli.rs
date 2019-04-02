@@ -21,113 +21,134 @@ SOFTWARE.
 */
 
 /* project use */
+use io;
 use filter;
-use modifier;
-
-/* std use */
-use std;
-use std::rc::Rc;
-use std::cell::RefCell;
 
 /* crates use */
 use clap::{App, Arg, ArgMatches, SubCommand};
 
 pub fn parser<'a>() -> ArgMatches<'a> {
     App::new("fpa")
-        .version("0.4 Nidoqueen")
+        .version("0.5")
         .author("Pierre Marijon <pierre.marijon@inria.fr>")
         .about("fpa take long read mapping information and filter them")
-        .arg(Arg::with_name("delete_containment")
-             .short("c")
-             .display_order(10)
-             .long("delete-containment")
-             .help("If match are containment match is discard, in gfa1 mode containment is not included")
-             )
-        .arg(Arg::with_name("keep_containment")
-             .short("C")
-             .display_order(20)
-             .long("keep-containment")
-             .help("Only containment match is keeped, in gfa1 mode containment is included")
-             )
-        .arg(Arg::with_name("delete_internalmatch")
+        .arg(Arg::with_name("input")
              .short("i")
-             .display_order(30)
-             .long("delete-internalmatch")
-             .help("If match are an internal match is discard, in gfa1 mode internalmatch is not included")
+             .long("input")
+             .default_value("-")
+             .help("Path to input file, use '-' for stdin")
              )
-        .arg(Arg::with_name("keep_internalmatch")
-             .short("I")
-             .display_order(40)
-             .long("keep-internalmatch")
-             .help("Only internal match overlap is keeped, in gfa1 mode internalmatch is included")
-             )
-        .arg(Arg::with_name("delete_dovetail")
-             .short("d")
-             .display_order(42)
-             .long("delete-dovetail")
-             .help("If match are an dovetail is discard")
-             )
-        .arg(Arg::with_name("keep_dovetail")
-             .short("D")
-             .display_order(48)
-             .long("keep-dovetail")
-             .help("Only dovetail overlap is keeped")
-             )
-        .arg(Arg::with_name("delete_length_lower")
-             .short("l")
-             .display_order(50)
-             .takes_value(true)
-             .long("delete-lower")
-             .help("If match length is lower than the value is discard")
-             )
-        .arg(Arg::with_name("delete_length_greater")
-             .short("L")
-             .display_order(60)
-             .takes_value(true)
-             .long("delete-upper")
-             .help("If match length is upper than the value is discard")
-             )
-        .arg(Arg::with_name("delete_name_match")
-             .short("m")
-             .display_order(70)
-             .takes_value(true)
-             .long("delete-match")
-             .help("If match contain read name match with regex is discard")
-             )
-        .arg(Arg::with_name("keep_name_match")
-             .short("M")
-             .display_order(80)
-             .takes_value(true)
-             .long("keep-match")
-             .help("Only match contain read name match with regex keeped")
-             )
-        .arg(Arg::with_name("delete_samename")
-             .short("s")
-             .display_order(90)
-             .long("delete-same-name")
-             .help("If self match is discard")
-             )
-        .arg(Arg::with_name("keep_samename")
-             .short("S")
-             .display_order(100)
-             .long("keep-same-name")
-             .help("Only self match are keeped")
-             )
-        .arg(Arg::with_name("modifier-renaming")
-             .short("r")
-             .long("rename")
-             .takes_value(true)
-             .display_order(107)
-             .help("Rename read with value in file passed as parameter if exist or by index store in file passed as parameter are empty")
-             )
+        .arg(Arg::with_name("output")
+             .short("o")
+             .long("output")
+             .default_value("-")
+             .help("Path to output file, use '-' for stdout")
+        )
+        .subcommand(SubCommand::with_name("keep")
+                    .about("fpa keep only mapping match this constraints")
+                    .arg(Arg::with_name("containment")
+                         .short("c")
+                         .long("containment")
+                         .help("Keep only containment mapping")
+                    )
+                    .arg(Arg::with_name("internalmatch")
+                         .short("i")
+                         .long("internalmatch")
+                         .help("Keep only internal mapping")
+                    )
+                    .arg(Arg::with_name("dovetail")
+                         .short("d")
+                         .long("dovetail")
+                         .help("Keep only dovetail mapping")
+                    )
+                    .arg(Arg::with_name("length_lower")
+                         .short("l")
+                         .long("length-lower")
+                         .takes_value(true)
+                         .help("Keep only mapping with length lower than value")
+                    )
+                    .arg(Arg::with_name("length_upper")
+                         .short("L")
+                         .long("length-upper")
+                         .takes_value(true)
+                         .help("Keep only mapping with length upper than value")
+                    )
+                    .arg(Arg::with_name("name_match")
+                         .short("n")
+                         .long("name-match")
+                         .takes_value(true)
+                         .help("Keep only mapping where one reads match with regex")
+                    )
+                    .arg(Arg::with_name("same_name")
+                         .short("s")
+                         .long("same-name")
+                         .help("Keep only mapping where reads have same name")
+                    )
+        )
+        .subcommand(SubCommand::with_name("drop")
+                    .about("fpa drop mapping match this constraints")
+                    .arg(Arg::with_name("containment")
+                         .short("c")
+                         .long("containment")
+                         .help("Drop containment mapping")
+                    )
+                    .arg(Arg::with_name("internalmatch")
+                         .short("i")
+                         .long("internalmatch")
+                         .help("Drop internal mapping")
+                    )
+                    .arg(Arg::with_name("dovetail")
+                         .short("d")
+                         .long("dovetail")
+                         .help("Drop dovetail mapping")
+                    )
+                    .arg(Arg::with_name("length_lower")
+                         .short("l")
+                         .long("length-lower")
+                         .takes_value(true)
+                         .help("Drop mapping with length lower than value")
+                    )
+                    .arg(Arg::with_name("length_upper")
+                         .short("L")
+                         .long("length-upper")
+                         .takes_value(true)
+                         .help("Drop mapping with length upper than value")
+                    )
+                    .arg(Arg::with_name("name_match")
+                         .short("n")
+                         .long("name-match")
+                         .takes_value(true)
+                         .help("Drop mapping where one reads match with regex")
+                    )
+                    .arg(Arg::with_name("same_name")
+                         .short("s")
+                         .long("same-name")
+                         .help("Drop mapping where reads have same name")
+                    )
+        )
+        .subcommand(SubCommand::with_name("rename")
+                    .about("fpa rename reads with name you chose or with incremental counter")
+                    .arg(Arg::with_name("input")
+                         .short("i")
+                         .long("input")
+                         .takes_value(true)
+                         .help("Rename reads with value in path passed as parameter")
+                    )
+                    .arg(Arg::with_name("output")
+                         .short("o")
+                         .long("output")
+                         .takes_value(true)
+                         .help("Write rename table in path passed as parameter")
+                    )
+        )
         .subcommand(SubCommand::with_name("index")
-                    .about("control indexing of mapping in input")
+                    .about("fpa generate a index of mapping passing filter")
                     .arg(Arg::with_name("filename")
                          .short("f")
                          .long("filename")
                          .takes_value(true)
                          .display_order(108)
-                         .help("Path where index was write")
+                         .help("Write index of mapping passing filter in path passed as parameter")
                     )
                     .arg(Arg::with_name("type")
                          .short("t")
@@ -138,9 +159,17 @@ pub fn parser<'a>() -> ArgMatches<'a> {
                          .help("Type of index, only reference read when it's query, target or both of them")
                     )
         )
+        .subcommand(SubCommand::with_name("gfa")
+                    .about("fpa generate a overlap graph in gfa1 format with mapping passing filter")
+                    .arg(Arg::with_name("output")
+                         .short("o")
+                         .long("output")
+                         .takes_value(true)
+                         .help("Write mapping passing filter in gfa1 graph format in path passed as parameter")
+                    )
+        )
         .arg(Arg::with_name("internal-match-threshold")
              .takes_value(true)
-             .display_order(105)
              .long("internal-threshold")
              .default_value("0.8")
              .help("A match is internal match if overhang length > match length * internal threshold this option set internal match")
@@ -148,7 +177,6 @@ pub fn parser<'a>() -> ArgMatches<'a> {
         .arg(Arg::with_name("compression-out")
              .short("z")
              .takes_value(true)
-             .display_order(110)
              .long("compression-out")
              .possible_values(&["gzip", "bzip2", "lzma", "no"])
              .help("Output compression format, the input compression format is chosen by default")
@@ -156,137 +184,134 @@ pub fn parser<'a>() -> ArgMatches<'a> {
         .arg(Arg::with_name("format")
              .short("F")
              .long("format")
-             .display_order(120)
              .takes_value(true)
              .help("Force the format used")
              .possible_values(&["paf", "mhap"])
-             )
-        .arg(Arg::with_name("mode")
-             .short("o")
-             .long("output-mode")
-             .display_order(120)
-             .takes_value(true)
-             .default_value("basic")
-             .help("basic: output in same format as input, gfa1: output is in gfa1 overlap graph format (by default flag -I and -C are up)")
-             .possible_values(&["basic", "gfa1"])
-             )
-        .arg(Arg::with_name("input")
-             .takes_value(true)
-             .default_value("-")
-             )
-        .arg(Arg::with_name("output")
-             .takes_value(true)
-             .default_value("-")
              )
         .get_matches()
 }
 
 
-pub fn generate_modifiers<'a>(matches: &ArgMatches) -> Vec<Rc<RefCell<modifier::Modifier>>> {
-    let mut modifiers: Vec<Rc<RefCell<modifier::Modifier>>> = Vec::new();
+pub trait Filters {
+    fn pass(&self, r: &io::MappingRecord) -> bool;
+    
+    fn internal_match(&self) -> f64;
 
-    if matches.is_present("modifier-renaming") {
-        let rename_file = matches.value_of("modifier-renaming").unwrap();
-        modifiers.push(Rc::new(RefCell::new(modifier::Renaming::new(rename_file))));
-    }
+    fn add_filter(&mut self, f: Box<filter::Filter>);
+    
+    fn generate(&mut self, m: &clap::ArgMatches) {
+        let mut filters: Vec<Box<filter::Filter>> = Vec::new();
 
-    if let Some(index_matches) = matches.subcommand_matches("index") {
-        let index_file = index_matches.value_of("filename").unwrap();
-        let index_type = index_matches.value_of("type").unwrap();
-        modifiers.push(Rc::new(RefCell::new(modifier::Indexing::new(index_file, index_type))));
-    }
-
-    return modifiers;
-}
-
-
-pub fn generate_filters(matches: &ArgMatches) -> Vec<Box<filter::Filter>> {
-
-    let mut filters: Vec<Box<filter::Filter>> = Vec::new();
-
-    generate_type_filters(matches, &mut filters);
-    generate_other_filters(matches, &mut filters);
-
-    return filters;
-}
-
-pub fn generate_type_filters(matches: &ArgMatches, filters: &mut Vec<Box<filter::Filter>>) {
-
-    let internal_match_t = matches
-        .value_of("internal-match-threshold")
-        .unwrap()
-        .parse::<f64>()
-        .unwrap();
-
-    if matches.is_present("delete_internalmatch") {
-        filters.push(Box::new(
-            filter::InternalMatch::new(internal_match_t, false),
-        ));
-    }
-
-    if matches.is_present("keep_internalmatch") {
-        filters.push(Box::new(filter::InternalMatch::new(internal_match_t, true)));
-    }
-
-    if matches.is_present("delete_containment") {
-        filters.push(Box::new(filter::Containment::new(internal_match_t, false)));
-    }
-
-    if matches.is_present("keep_containment") {
-        filters.push(Box::new(filter::Containment::new(internal_match_t, true)));
-    }
-
-    if matches.is_present("delete_dovetail") {
-        filters.push(Box::new(filter::Dovetails::new(internal_match_t, false)));
-    }
-
-    if matches.is_present("keep_dovetail") {
-        filters.push(Box::new(filter::Dovetails::new(internal_match_t, true)));
+        let internal_match = self.internal_match();
+        
+        if let Some(containment) = m.value_of("containment") {
+            self.add_filter(Box::new(filter::Containment::new(internal_match)));
+        }
+        
+        if let Some(internalmatch) = m.value_of("internalmatch") {
+            self.add_filter(Box::new(filter::InternalMatch::new(internal_match)));
+        }
+            
+        if let Some(dovetail) = m.value_of("dovetail") {
+            self.add_filter(Box::new(filter::Dovetails::new(internal_match)));
+        }
+        
+        if let Some(length_lower) = m.value_of("length_lower") {
+            self.add_filter(Box::new(filter::Length::new(length_lower.parse::<u64>().unwrap(), std::cmp::Ordering::Less)));
+        }
+        
+        if let Some(length_lower) = m.value_of("length_upper") {
+            self.add_filter(Box::new(filter::Length::new(length_lower.parse::<u64>().unwrap(), std::cmp::Ordering::Greater)));
+        }
+        
+        if let Some(name_match) = m.value_of("name_match") {
+            self.add_filter(Box::new(filter::NameMatch::new(name_match)));
+        }
+        
+        if let Some(same_name) = m.value_of("same_name") {
+            self.add_filter(Box::new(filter::SameName::new()));
+        }
     }
 }
 
-pub fn generate_other_filters(matches: &ArgMatches, filters: &mut Vec<Box<filter::Filter>>) {
-    if matches.is_present("delete_length_lower") {
-        filters.push(Box::new(filter::Length::new(
-            matches
-                .value_of("delete_length_lower")
-                .unwrap()
-                .parse::<u64>()
-                .unwrap(),
-            std::cmp::Ordering::Less,
-        )));
-    }
+pub struct Drop {
+    filters: Vec<Box<filter::Filter>>,
+    internal_threshold: f64,
+}
 
-    if matches.is_present("delete_length_greater") {
-        filters.push(Box::new(filter::Length::new(
-            matches
-                .value_of("delete_length_greater")
-                .unwrap()
-                .parse::<u64>()
-                .unwrap(),
-            std::cmp::Ordering::Greater,
-        )));
-    }
+impl Drop {
+    pub fn new(matches: &clap::ArgMatches) -> Self {
+        let filters = Vec::new();
+        let mut d = Drop {
+            filters: filters,
+            internal_threshold: matches.value_of("internal-match-threshold").unwrap().parse::<f64>().unwrap(),
+        };
 
-    if matches.is_present("delete_name_match") {
-        filters.push(Box::new(filter::NameMatch::new(
-            matches.value_of("delete_name_match").unwrap(),
-            false,
-        )));
-    }
-
-    if matches.is_present("keep_name_match") {
-        filters.push(Box::new(filter::NameMatch::new(
-            matches.value_of("keep_name_match").unwrap(),
-            true,
-        )));
-    }
-
-    if matches.is_present("delete_samename") {
-        filters.push(Box::new(filter::SameName::new(false)));
-    }
-
-    if matches.is_present("keep_samename") {
-        filters.push(Box::new(filter::SameName::new(true)));
+        if let Some(drop) = matches.subcommand_matches("drop") {
+            d.generate(drop);
+        }
+        
+        return d;
     }
 }
+
+impl Filters for Drop {
+    fn pass(&self, r: &io::MappingRecord) -> bool {
+        println!("Drop len {}", self.filters.len());
+        
+        return if self.filters.is_empty() {
+            return true
+        } else {
+            return !self.filters.iter().any(|ref x| x.run(r))
+        };
+    }
+    
+    fn internal_match(&self) -> f64 {
+        self.internal_threshold
+    }
+    
+    fn add_filter(&mut self, f: Box<filter::Filter>) {
+        self.filters.push(f);
+    }
+}
+
+pub struct Keep {
+    filters: Vec<Box<filter::Filter>>,
+    internal_threshold: f64,
+}
+
+impl Keep {
+    pub fn new(matches: &clap::ArgMatches) -> Self {
+        let filters = Vec::new();
+        let mut k = Keep {
+            filters: filters,
+            internal_threshold: matches.value_of("internal-match-threshold").unwrap().parse::<f64>().unwrap(),
+        };
+
+        if let Some(keep) = matches.subcommand_matches("keep") {
+            k.generate(keep);
+        }
+        
+        return k;
+    }
+}
+
+impl Filters for Keep {
+    fn pass(&self, r: &io::MappingRecord) -> bool {
+        println!("Keep len {}", self.filters.len());
+        return if self.filters.is_empty() {
+            return true
+        } else {
+            return self.filters.iter().all(|ref x| x.run(r))
+        };
+    }
+
+    fn internal_match(&self) -> f64 {
+        self.internal_threshold
+    }
+    
+    fn add_filter(&mut self, f: Box<filter::Filter>) {
+        self.filters.push(f);
+    }
+}
+
