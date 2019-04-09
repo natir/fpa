@@ -30,7 +30,7 @@ use csv;
 
 /* project use */
 use io;
-use modifier;
+use generator;
 
 pub struct Renaming {
     file_rename_path: String,
@@ -101,7 +101,7 @@ impl Renaming {
     }
 }
 
-impl modifier::Modifier for Renaming {
+impl generator::Modifier for Renaming {
     fn run(self: &mut Self, r: &mut io::MappingRecord) {
         if self.index_mode {
             self.run_no_index(r);

@@ -45,9 +45,10 @@ mod cli;
 mod file;
 //mod work;
 mod filter;
-//mod generator;
+mod generator;
 
 use cli::Filters;
+use io::MappingRecord;
 
 fn main() {
 
@@ -74,13 +75,16 @@ fn main() {
         matches.value_of("compression-out").unwrap_or("no"),
     );
 
-    let mut output: Box<std::io::Write> =
-        file::get_output(matches.value_of("output").unwrap(), out_compression);
+    let mut output: std::io::BufWriter<Box<std::io::Write>> =
+        std::io::BufWriter::new(file::get_output(matches.value_of("output").unwrap(), out_compression));
 
     let mut writer = io::paf::Writer::new(output);
     let mut reader = io::paf::Reader::new(input);
     let drop = cli::Drop::new(&matches);
     let keep = cli::Keep::new(&matches);
+    let mut modifier = cli::Modifier::new(&matches);
+
+    let mut position = 0;
     for result in reader.records() {
         let mut record = result.expect("Trouble during read of input mapping");
 
@@ -93,11 +97,19 @@ fn main() {
         if !drop.pass(&record) {
             continue
         }
+
+        writer.write(&record)
+            .expect("Trouble during write of output");
+
+        let new_position = output.seek(std::io::SeekFrom::Current(0));
+        record.set_position((position, new_position));
         
         // modifier
-        
-        writer.write(&record).expect("Trouble during write of output")
+        modifier.pass(&mut record);
+
+        position = new_position;
     }
 
     // close modifier
+    modifier.write();
 }

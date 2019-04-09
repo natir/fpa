@@ -91,6 +91,10 @@ impl io::MappingRecord for Record {
         self.position
     }
 
+    fn set_position(self: &mut Self, p: (u64, u64)) {
+        self.position = p;
+    }
+
     fn length(self: &Self) -> u64 {
         min(self.end_a - self.begin_a, self.end_b - self.begin_b)
     }

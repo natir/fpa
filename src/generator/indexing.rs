@@ -28,7 +28,7 @@ use csv;
 
 /* project use */
 use io;
-use modifier;
+use generator;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum IndexType {
@@ -83,7 +83,7 @@ impl Indexing {
     }
 }
 
-impl modifier::Modifier for Indexing {
+impl generator::Modifier for Indexing {
     fn run(self: &mut Self, r: &mut io::MappingRecord) {
         match self.index_type {
             IndexType::Both => self.run_both(r),

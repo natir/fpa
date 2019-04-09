@@ -23,6 +23,7 @@ SOFTWARE.
 /* project use */
 use io;
 use filter;
+use generator;
 
 /* crates use */
 use clap::{App, Arg, ArgMatches, SubCommand};
@@ -257,12 +258,10 @@ impl Drop {
 
 impl Filters for Drop {
     fn pass(&self, r: &io::MappingRecord) -> bool {
-        println!("Drop len {}", self.filters.len());
-        
         return if self.filters.is_empty() {
-            return true
+            true
         } else {
-            return !self.filters.iter().any(|ref x| x.run(r))
+            !self.filters.iter().any(|ref x| x.run(r))
         };
     }
     
@@ -298,11 +297,10 @@ impl Keep {
 
 impl Filters for Keep {
     fn pass(&self, r: &io::MappingRecord) -> bool {
-        println!("Keep len {}", self.filters.len());
         return if self.filters.is_empty() {
-            return true
+            true
         } else {
-            return self.filters.iter().all(|ref x| x.run(r))
+            self.filters.iter().all(|ref x| x.run(r))
         };
     }
 
@@ -315,3 +313,40 @@ impl Filters for Keep {
     }
 }
 
+pub struct Modifier {
+    modifiers: Vec<Box<generator::Modifier>>,
+}
+
+impl Modifier {
+    pub fn new(matches: &clap::ArgMatches) -> Self {
+        let mut modifiers: Vec<Box<generator::Modifier>> = Vec::new();
+
+        if let Some(m) = matches.subcommand_matches("index") {
+            modifiers.push(Box::new(generator::Indexing::new(m.value_of("filename").unwrap(), m.value_of("type").unwrap())));
+        }
+
+        if let Some(m) = matches.subcommand_matches("rename") {
+            if m.is_present("input") {
+                modifiers.push(Box::new(generator::Renaming::new(m.value_of("input").unwrap())));
+            } else if m.is_present("output") {
+                modifiers.push(Box::new(generator::Renaming::new(m.value_of("output").unwrap())));
+            }
+        }
+
+        Modifier {
+            modifiers: modifiers,
+        }
+    }
+
+    pub fn pass(&mut self, r: &mut io::MappingRecord) {
+        for mut m in self.modifiers.iter_mut() {
+            m.run(r);
+        }
+    }
+
+    pub fn write(&self) {
+        for m in self.modifiers.iter() {
+            m.write();
+        }
+    }
+}
