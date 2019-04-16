@@ -53,8 +53,9 @@ use generator::Modifier;
 
 fn main() {
 
-    let matches = cli::parser();
-
+    let app = cli::app();
+    let matches = app.get_matches();
+    
     /* Manage input and output file */
     let compression: file::CompressionFormat;
     let input: Box<std::io::Read>;

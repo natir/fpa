@@ -28,9 +28,7 @@ use csv;
 
 /* standard use */
 use std;
-use std::fs;
 use std::cmp::min;
-use std::path::Path;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Record {
@@ -209,7 +207,7 @@ impl<W: std::io::Write> Writer< W> {
 
     /// Write a given GFF record.
     pub fn write(&mut self, record: &Record) -> csv::Result<u64> {
-        let mut buffer: Vec<u8> = Vec::new();
+        let buffer: Vec<u8> = Vec::new();
         let mut wrapper = csv::WriterBuilder::new()
             .delimiter(b'\t')
             .has_headers(false)
