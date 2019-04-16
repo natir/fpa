@@ -42,6 +42,7 @@ impl InternalMatch {
 
 impl filter::Filter for InternalMatch {
     fn run(self: &Self, r: &io::MappingRecord) -> bool {
+
         let overhang = if r.strand() == '+' {
             min(r.begin_a(), r.begin_b()) + min(r.length_a() - r.end_a(), r.length_b() - r.end_b())
         } else {

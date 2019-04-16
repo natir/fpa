@@ -22,7 +22,7 @@ SOFTWARE.
 
 pub mod paf;
 pub mod mhap;
-//pub mod gfa;
+pub mod gfa;
 
 pub trait MappingRecord {
     fn read_a(self: &Self) -> String;

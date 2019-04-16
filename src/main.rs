@@ -49,6 +49,7 @@ mod generator;
 
 use cli::Filters;
 use io::MappingRecord;
+use generator::Modifier;
 
 fn main() {
 
@@ -84,6 +85,12 @@ fn main() {
     let keep = cli::Keep::new(&matches);
     let mut modifier = cli::Modifier::new(&matches);
 
+    let mut index = if let Some(m) = matches.subcommand_matches("index") {
+        generator::Indexing::new(m.value_of("filename").unwrap(), m.value_of("type").unwrap())
+    } else {
+        generator::Indexing::empty()
+    };
+
     let mut position = 0;
     for result in reader.records() {
         let mut record = result.expect("Trouble during read of input mapping");
@@ -98,18 +105,21 @@ fn main() {
             continue
         }
 
-        writer.write(&record)
-            .expect("Trouble during write of output");
-
-        let new_position = output.seek(std::io::SeekFrom::Current(0));
-        record.set_position((position, new_position));
-        
         // modifier
         modifier.pass(&mut record);
+        
+        let new_position = position + writer.write(&record)
+            .expect("Trouble during write of output");
+        
+        record.set_position((position, new_position));
+
+        index.run(&mut record);
 
         position = new_position;
     }
 
     // close modifier
     modifier.write();
+
+    index.write();
 }

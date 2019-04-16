@@ -21,20 +21,35 @@ SOFTWARE.
 */
 
 
+/* std use */
+
+/* crate use */
+
+/* projet use */
 use io;
+use generator;
 
-pub trait Modifier {
-    fn run(self: &mut Self, r: &mut io::MappingRecord);
-
-    fn write(self: &mut Self);
+pub struct Gfa1 {
+    gfa_path: String,
+    gfa_object: io::gfa::Gfa1,
 }
 
-pub mod renaming;
-pub use self::renaming::Renaming;
+impl Gfa1 {
+    pub fn new(gfa_path: String, keep_internal: bool, keep_containment: bool, internal_threshold: f64) -> Self {
+        Gfa1 {
+            gfa_path: gfa_path,
+            gfa_object: io::gfa::Gfa1::new(keep_internal, keep_containment, internal_threshold),
+        }
+    }
+}
 
-pub mod indexing;
-pub use self::indexing::Indexing;
+impl generator::Modifier for Gfa1 {
+    fn run(self: &mut Self, r: &mut io::MappingRecord) {
+        self.gfa_object.add(r);
+    }
 
-pub mod gfa;
-pub use self::gfa::Gfa1;
-
+    fn write(self: &mut Self) {
+        let mut writer = std::fs::File::create(&self.gfa_path).unwrap();
+        self.gfa_object.write(&mut writer);
+    }
+}

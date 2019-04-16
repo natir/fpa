@@ -168,6 +168,16 @@ pub fn parser<'a>() -> ArgMatches<'a> {
                          .takes_value(true)
                          .help("Write mapping passing filter in gfa1 graph format in path passed as parameter")
                     )
+                    .arg(Arg::with_name("containment")
+                         .short("c")
+                         .long("containment")
+                         .help("Keep containment overlap")
+                    )
+                    .arg(Arg::with_name("internalmatch")
+                         .short("i")
+                         .long("internalmatch")
+                         .help("Keep internal match overlap")
+                    )
         )
         .arg(Arg::with_name("internal-match-threshold")
              .takes_value(true)
@@ -201,19 +211,17 @@ pub trait Filters {
     fn add_filter(&mut self, f: Box<filter::Filter>);
     
     fn generate(&mut self, m: &clap::ArgMatches) {
-        let mut filters: Vec<Box<filter::Filter>> = Vec::new();
 
         let internal_match = self.internal_match();
-        
-        if let Some(containment) = m.value_of("containment") {
+        if m.is_present("containment") {
             self.add_filter(Box::new(filter::Containment::new(internal_match)));
         }
         
-        if let Some(internalmatch) = m.value_of("internalmatch") {
+        if m.is_present("internalmatch") {
             self.add_filter(Box::new(filter::InternalMatch::new(internal_match)));
         }
             
-        if let Some(dovetail) = m.value_of("dovetail") {
+        if m.is_present("dovetail") {
             self.add_filter(Box::new(filter::Dovetails::new(internal_match)));
         }
         
@@ -229,7 +237,7 @@ pub trait Filters {
             self.add_filter(Box::new(filter::NameMatch::new(name_match)));
         }
         
-        if let Some(same_name) = m.value_of("same_name") {
+        if m.is_present("same_name") {
             self.add_filter(Box::new(filter::SameName::new()));
         }
     }
@@ -298,7 +306,7 @@ impl Keep {
 impl Filters for Keep {
     fn pass(&self, r: &io::MappingRecord) -> bool {
         return if self.filters.is_empty() {
-            true
+            return true
         } else {
             self.filters.iter().all(|ref x| x.run(r))
         };
@@ -321,10 +329,6 @@ impl Modifier {
     pub fn new(matches: &clap::ArgMatches) -> Self {
         let mut modifiers: Vec<Box<generator::Modifier>> = Vec::new();
 
-        if let Some(m) = matches.subcommand_matches("index") {
-            modifiers.push(Box::new(generator::Indexing::new(m.value_of("filename").unwrap(), m.value_of("type").unwrap())));
-        }
-
         if let Some(m) = matches.subcommand_matches("rename") {
             if m.is_present("input") {
                 modifiers.push(Box::new(generator::Renaming::new(m.value_of("input").unwrap())));
@@ -333,6 +337,20 @@ impl Modifier {
             }
         }
 
+        let internal_match = matches.value_of("internal-match-threshold").unwrap().parse::<f64>().unwrap();
+        if let Some(m) = matches.subcommand_matches("gfa") {
+            modifiers.push(
+                Box::new(
+                    generator::Gfa1::new(
+                        m.value_of("output").unwrap().to_string(),
+                        m.is_present("internalmatch"),
+                        m.is_present("containment"),
+                        internal_match
+                    )
+                )
+            )
+        }
+        
         Modifier {
             modifiers: modifiers,
         }
@@ -344,8 +362,8 @@ impl Modifier {
         }
     }
 
-    pub fn write(&self) {
-        for m in self.modifiers.iter() {
+    pub fn write(&mut self) {
+        for m in self.modifiers.iter_mut() {
             m.write();
         }
     }

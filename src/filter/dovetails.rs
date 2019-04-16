@@ -41,7 +41,7 @@ impl Dovetails {
 
 impl filter::Filter for Dovetails {
     fn run(self: &Self, r: &io::MappingRecord) -> bool {
-        return !filter::Containment::new(self.internal_threshold).run(r);
+        return !filter::InternalMatch::new(self.internal_threshold).run(r) && !filter::Containment::new(self.internal_threshold).run(r);
     }
 }
 
