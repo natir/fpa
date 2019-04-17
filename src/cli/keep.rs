@@ -32,14 +32,14 @@ pub struct Keep {
 }
 
 impl Keep {
-    pub fn new(matches: &clap::ArgMatches) -> Self {
+    pub fn new(internal_match: f64, matches: &std::collections::HashMap<String, clap::ArgMatches>) -> Self {
         let filters = Vec::new();
         let mut k = Keep {
             filters: filters,
-            internal_threshold: matches.value_of("internal-match-threshold").unwrap().parse::<f64>().unwrap(),
+            internal_threshold: internal_match,
         };
 
-        if let Some(keep) = matches.subcommand_matches("keep") {
+        if let Some(keep) = matches.get("keep") {
             k.generate(keep);
         }
         

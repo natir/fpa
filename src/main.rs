@@ -53,8 +53,13 @@ use generator::Modifier;
 
 fn main() {
 
-    let app = cli::app();
-    let matches = app.get_matches();
+    let mut app = cli::app();
+    let matches = match app.get_matches_from_safe_borrow(std::env::args()) {
+        Ok(x) => x,
+        Err(x) => x.exit(),
+    };
+
+    let subcmd = cli::get_subcmd(&mut app);
     
     /* Manage input and output file */
     let compression: file::CompressionFormat;
@@ -80,13 +85,15 @@ fn main() {
     let mut output: std::io::BufWriter<Box<std::io::Write>> =
         std::io::BufWriter::new(file::get_output(matches.value_of("output").unwrap(), out_compression));
 
+    let internal_match_threshold = matches.value_of("internal-match-threshold").unwrap().parse::<f64>().unwrap();
+
     let mut writer = io::paf::Writer::new(output);
     let mut reader = io::paf::Reader::new(input);
-    let drop = cli::Drop::new(&matches);
-    let keep = cli::Keep::new(&matches);
-    let mut modifier = cli::Modifier::new(&matches);
+    let drop = cli::Drop::new(internal_match_threshold, &subcmd);
+    let keep = cli::Keep::new(internal_match_threshold, &subcmd);
+    let mut modifier = cli::Modifier::new(internal_match_threshold, &subcmd);
 
-    let mut index = if let Some(m) = matches.subcommand_matches("index") {
+    let mut index = if let Some(m) = subcmd.get("index") {
         generator::Indexing::new(m.value_of("filename").unwrap(), m.value_of("type").unwrap())
     } else {
         generator::Indexing::empty()

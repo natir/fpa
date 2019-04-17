@@ -29,10 +29,10 @@ pub struct Modifier {
 }
 
 impl Modifier {
-    pub fn new(matches: &clap::ArgMatches) -> Self {
+    pub fn new(internal_match: f64, matches: &std::collections::HashMap<String, clap::ArgMatches>) -> Self {
         let mut modifiers: Vec<Box<generator::Modifier>> = Vec::new();
 
-        if let Some(m) = matches.subcommand_matches("rename") {
+        if let Some(m) = matches.get("rename") {
             if m.is_present("input") {
                 modifiers.push(Box::new(generator::Renaming::new(m.value_of("input").unwrap())));
             } else if m.is_present("output") {
@@ -40,8 +40,7 @@ impl Modifier {
             }
         }
 
-        let internal_match = matches.value_of("internal-match-threshold").unwrap().parse::<f64>().unwrap();
-        if let Some(m) = matches.subcommand_matches("gfa") {
+        if let Some(m) = matches.get("gfa") {
             modifiers.push(
                 Box::new(
                     generator::Gfa1::new(

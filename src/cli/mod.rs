@@ -51,40 +51,78 @@ pub fn app<'a, 'b>() -> App<'a, 'b> {
              .long("input")
              .default_value("-")
              .help("Path to input file, use '-' for stdin")
-             )
+        )
         .arg(Arg::with_name("output")
              .short("o")
              .long("output")
              .default_value("-")
              .help("Path to output file, use '-' for stdout")
         )
-        .subcommand(subcommand::get_keep())
-        .subcommand(subcommand::get_drop())
-        .subcommand(subcommand::get_rename())
-        .subcommand(subcommand::get_index())
-        .subcommand(subcommand::get_gfa())
+
         .arg(Arg::with_name("internal-match-threshold")
              .takes_value(true)
              .long("internal-threshold")
              .default_value("0.8")
              .help("A match is internal match if overhang length > match length * internal threshold this option set internal match")
-             )
+        )
         .arg(Arg::with_name("compression-out")
              .short("z")
              .takes_value(true)
              .long("compression-out")
              .possible_values(&["gzip", "bzip2", "lzma", "no"])
              .help("Output compression format, the input compression format is chosen by default")
-             )
+        )
         .arg(Arg::with_name("format")
              .short("F")
              .long("format")
              .takes_value(true)
              .help("Force the format used")
              .possible_values(&["paf", "mhap"])
-             )
+        )
+        .subcommand(subcommand::get_keep())
+        .subcommand(subcommand::get_drop())
+        .subcommand(subcommand::get_rename())
+        .subcommand(subcommand::get_index())
+        .subcommand(subcommand::get_gfa())
 }
 
+pub fn get_subcmd<'a, 'b>(app: &mut App<'a, 'b>) -> std::collections::HashMap<String, ArgMatches<'a>> {
+    let basic_cli = vec!["fpa".to_string(), "-i".to_string(), "foo".to_string(), "-o".to_string(), "bar".to_string()];
+    let mut sub2matches = std::collections::HashMap::new();
+
+    let mut cli: Vec<String> = std::env::args().collect();
+    loop {
+        /* parse cli */
+        let mut matches = match app.get_matches_from_safe_borrow(cli) {
+            Ok(x) => x,
+            Err(x) => x.exit(),
+        };
+
+        let (name, sub) = match matches.subcommand() {
+            (n, Some(s)) => (n, s),
+            (n, None) => break,
+        };
+        
+        sub2matches.insert(name.to_string(), sub.clone());
+
+        let (subname, subsub) = match sub.subcommand() {
+            (n, Some(s)) => (n, s),
+            (n, None) => break,
+        };
+
+
+        if subsub.values_of("").is_none() {
+            break;
+        }
+        
+        /* rebuild a new cli*/
+        cli = basic_cli.clone();
+        cli.push(subname.to_string());
+        cli.extend(subsub.values_of("").unwrap().map(|x| x.to_string()));
+    }
+        
+    return sub2matches;
+}
 
 pub trait Filters {
     fn pass(&self, r: &io::MappingRecord) -> bool;
@@ -103,7 +141,7 @@ pub trait Filters {
         if m.is_present("internalmatch") {
             self.add_filter(Box::new(filter::InternalMatch::new(internal_match)));
         }
-            
+        
         if m.is_present("dovetail") {
             self.add_filter(Box::new(filter::Dovetails::new(internal_match)));
         }
