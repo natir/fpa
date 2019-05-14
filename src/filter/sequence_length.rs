@@ -23,7 +23,6 @@ SOFTWARE.
 /* project use */
 use io;
 use filter;
-use type_def::WorkOnWichPart;
 
 /* standard use */
 use std;
