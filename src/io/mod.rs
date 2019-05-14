@@ -21,7 +21,7 @@ SOFTWARE.
 */
 
 pub mod paf;
-pub mod mhap;
+pub mod m4;
 pub mod gfa;
 
 pub trait MappingRecord {
@@ -48,5 +48,5 @@ pub trait MappingRecord {
 
 pub enum MappingFormat {
     Paf,
-    Mhap,
+    M4,
 }

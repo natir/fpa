@@ -40,16 +40,13 @@ pub struct Renaming {
 }
 
 impl Renaming {
-    pub fn new(file_rename_path: &str) -> Self {
+    pub fn new(file_rename_path: &str, in_file: bool) -> Self {
 
-        if !Path::new(file_rename_path).exists() {
-            return Renaming {
-                file_rename_path: file_rename_path.to_string(),
-                rename_table: HashMap::new(),
-                index: 1,
-                index_mode: true,
-            };
-        } else {
+        if in_file {
+            if !Path::new(file_rename_path).exists() {
+                panic!("Rename file not exist")
+            }
+            
             let mut table = HashMap::new();
             let mut reader = csv::ReaderBuilder::new().has_headers(false).from_reader(
                 File::open(
@@ -67,6 +64,13 @@ impl Renaming {
                 rename_table: table,
                 index: 0,
                 index_mode: false,
+            };
+        } else {
+            return Renaming {
+                file_rename_path: file_rename_path.to_string(),
+                rename_table: HashMap::new(),
+                index: 1,
+                index_mode: true,
             };
         }
     }

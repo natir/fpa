@@ -18,50 +18,22 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*/
+ */
 
-/* project use */
-use filter;
-use generator;
-
-/* std use */
-use std;
-use std::rc::Rc;
-use std::cell::RefCell;
-
-/* crate use */
-use clap::ArgMatches;
-
-/* module declaration */
-mod gfa;
-mod basic;
-
-#[derive(Debug, PartialEq)]
-pub enum InOutFormat {
-    Paf,
-    Mhap,
+#[derive(Clone, Debug, PartialEq)]
+pub enum WorkOnWichPart {
+    Query,
+    Target,
+    Both,
 }
 
-#[derive(Debug, PartialEq)]
-pub enum Mode {
-    Basic,
-    Gfa1,
-    // Gfa2, // not support yet
-}
-
-pub fn run<R: std::io::Read, W: std::io::Write>(
-    inputs: Vec<R>,
-    output: &mut W,
-    filters: &Vec<Box<filter::Filter>>,
-    modifiers: &mut Vec<Rc<RefCell<modifier::Modifier>>>,
-    matches: &ArgMatches,
-    format: InOutFormat,
-    mode: Mode,
-) {
-
-    if mode == Mode::Basic {
-        basic::basic(inputs, output, filters, modifiers, format);
-    } else {
-        gfa::gfa1(inputs, output, modifiers, matches, format);
+impl From<&str> for WorkOnWichPart {
+    fn from(index_type: &str) -> Self {
+        match index_type {
+            "query" => WorkOnWichPart::Query,
+            "target" => WorkOnWichPart::Target,
+            "both" => WorkOnWichPart::Both,
+            _ => WorkOnWichPart::Both,
+        }
     }
 }

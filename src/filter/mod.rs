@@ -44,3 +44,6 @@ pub use self::samename::SameName;
 
 pub mod namematch;
 pub use self::namematch::NameMatch;
+
+pub mod sequence_length;
+pub use self::sequence_length::SequenceLength;

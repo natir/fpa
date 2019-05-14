@@ -34,9 +34,9 @@ impl Modifier {
 
         if let Some(m) = matches.get("rename") {
             if m.is_present("input") {
-                modifiers.push(Box::new(generator::Renaming::new(m.value_of("input").unwrap())));
+                modifiers.push(Box::new(generator::Renaming::new(m.value_of("input").unwrap(), true)));
             } else if m.is_present("output") {
-                modifiers.push(Box::new(generator::Renaming::new(m.value_of("output").unwrap())));
+                modifiers.push(Box::new(generator::Renaming::new(m.value_of("output").unwrap(), false)));
             }
         }
 
