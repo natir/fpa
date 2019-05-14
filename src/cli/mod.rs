@@ -39,7 +39,7 @@ pub mod modifier;
 pub use self::modifier::*;
 
 /* crates use */
-use clap::{App, Arg, ArgMatches, SubCommand};
+use clap::{App, Arg, ArgMatches};
 
 pub fn app<'a, 'b>() -> App<'a, 'b> {
     App::new("fpa")
@@ -77,7 +77,7 @@ pub fn app<'a, 'b>() -> App<'a, 'b> {
              .long("format")
              .takes_value(true)
              .help("Force the format used")
-             .possible_values(&["paf", "mhap"])
+             .possible_values(&["paf", "m4"])
         )
         .subcommand(subcommand::get_keep())
         .subcommand(subcommand::get_drop())
@@ -93,21 +93,21 @@ pub fn get_subcmd<'a, 'b>(app: &mut App<'a, 'b>) -> std::collections::HashMap<St
     let mut cli: Vec<String> = std::env::args().collect();
     loop {
         /* parse cli */
-        let mut matches = match app.get_matches_from_safe_borrow(cli) {
+        let matches = match app.get_matches_from_safe_borrow(cli) {
             Ok(x) => x,
             Err(x) => x.exit(),
         };
 
         let (name, sub) = match matches.subcommand() {
             (n, Some(s)) => (n, s),
-            (n, None) => break,
+            (_, None) => break,
         };
         
         sub2matches.insert(name.to_string(), sub.clone());
 
         let (subname, subsub) = match sub.subcommand() {
             (n, Some(s)) => (n, s),
-            (n, None) => break,
+            (_, None) => break,
         };
 
 

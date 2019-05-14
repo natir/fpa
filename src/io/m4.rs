@@ -210,7 +210,31 @@ impl<W: std::io::Write> Writer<W> {
     }
 
     /// Write a given GFF record.
-    pub fn write(&mut self, record: &Record) -> csv::Result<()> {
+    pub fn write(&mut self, record: &Record) -> csv::Result<u64> {
+                let buffer: Vec<u8> = Vec::new();
+        let mut wrapper = csv::WriterBuilder::new()
+            .delimiter(b'\t')
+            .has_headers(false)
+            .flexible(true)
+            .from_writer(buffer);
+        
+        wrapper.serialize((
+            &record.read_a,
+            &record.read_b,
+            record.error,
+            record.shared_min_mers,
+            record.strand_a,
+            record.begin_a,
+            record.end_a,
+            record.length_a,
+            record.strand_b,
+            record.begin_b,
+            record.end_b,
+            record.length_b,
+        ))?;
+
+        let nb_bytes = wrapper.into_inner().unwrap().len() as u64;
+        
         self.inner.serialize((
             &record.read_a,
             &record.read_b,
@@ -224,7 +248,10 @@ impl<W: std::io::Write> Writer<W> {
             record.begin_b,
             record.end_b,
             record.length_b,
-        ))
+        ))?;
+
+        
+        return Ok(nb_bytes);
     }
 }
 
@@ -233,7 +260,7 @@ mod test {
 
     use super::*;
 
-    const MHAP_FILE: &'static [u8] = b"1 2 0.1 2 0 100 450 1000 0 550 900 1000
+    const M4_FILE: &'static [u8] = b"1 2 0.1 2 0 100 450 1000 0 550 900 1000
 1 3 0.1 2 0 550 900 1000 0 100 450 1000
 ";
 
@@ -252,7 +279,7 @@ mod test {
 
     #[test]
     fn read() {
-        let mut reader = Reader::new(MHAP_FILE);
+        let mut reader = Reader::new(M4_FILE);
 
         for (i, r) in reader.records().enumerate() {
             let record = r.unwrap();
@@ -274,7 +301,7 @@ mod test {
 
     #[test]
     fn write() {
-        let mut reader = Reader::new(MHAP_FILE);
+        let mut reader = Reader::new(M4_FILE);
         let mut writer = Writer::new(vec![]);
         for r in reader.records() {
             writer
@@ -282,6 +309,6 @@ mod test {
                 .ok()
                 .expect("Error writing record");
         }
-        assert_eq!(writer.inner.into_inner().unwrap(), MHAP_FILE);
+        assert_eq!(writer.inner.into_inner().unwrap(), M4_FILE);
     }
 }
