@@ -18,32 +18,22 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*/
+ */
 
-
-use io;
-
-pub trait Filter {
-    fn run(self: &Self, r: &io::MappingRecord) -> bool;
+#[derive(Clone, Debug, PartialEq)]
+pub enum WorkOnWichPart {
+    Query,
+    Target,
+    Both,
 }
 
-pub mod length;
-pub use self::length::Length;
-
-pub mod dovetails;
-pub use self::dovetails::Dovetails;
-
-pub mod containment;
-pub use self::containment::Containment;
-
-pub mod internalmatch;
-pub use self::internalmatch::InternalMatch;
-
-pub mod samename;
-pub use self::samename::SameName;
-
-pub mod namematch;
-pub use self::namematch::NameMatch;
-
-pub mod sequence_length;
-pub use self::sequence_length::SequenceLength;
+impl From<&str> for WorkOnWichPart {
+    fn from(index_type: &str) -> Self {
+        match index_type {
+            "query" => WorkOnWichPart::Query,
+            "target" => WorkOnWichPart::Target,
+            "both" => WorkOnWichPart::Both,
+            _ => WorkOnWichPart::Both,
+        }
+    }
+}

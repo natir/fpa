@@ -28,28 +28,12 @@ use csv;
 
 /* project use */
 use io;
+use type_def::WorkOnWichPart;
 use generator;
 
-#[derive(Clone, Debug, PartialEq)]
-pub enum IndexType {
-    Query,
-    Target,
-    Both,
-}
-
-impl From<&str> for IndexType {
-    fn from(index_type: &str) -> Self {
-        match index_type {
-            "query" => IndexType::Query,
-            "target" => IndexType::Target,
-            "both" => IndexType::Both,
-            _ => IndexType::Both,
-        }
-    }
-}
 
 pub struct Indexing {
-    index_type: IndexType,
+    index_type: WorkOnWichPart,
     file_index_path: String,
     index_table: HashMap<String, Vec<(u64, u64)>>,
 }
@@ -58,7 +42,7 @@ impl Indexing {
     pub fn new(file_index_path: &str, index_type: &str) -> Self {
         Indexing {
             file_index_path: file_index_path.to_string(),
-            index_type: IndexType::from(index_type),
+            index_type: WorkOnWichPart::from(index_type),
             index_table: HashMap::new(),
         }
     }
@@ -66,7 +50,7 @@ impl Indexing {
     pub fn empty() -> Self {
         Indexing {
             file_index_path: "".to_string(),
-            index_type: IndexType::Both,
+            index_type: WorkOnWichPart::Both,
             index_table: HashMap::new(),
         }
     }
@@ -96,9 +80,9 @@ impl generator::Modifier for Indexing {
         }
         
         match self.index_type {
-            IndexType::Both => self.run_both(r),
-            IndexType::Query => self.run_query(r),
-            IndexType::Target => self.run_target(r),
+            WorkOnWichPart::Both => self.run_both(r),
+            WorkOnWichPart::Query => self.run_query(r),
+            WorkOnWichPart::Target => self.run_target(r),
         }
     }
     

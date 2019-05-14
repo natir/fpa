@@ -20,25 +20,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
 /* project use */
 use io;
 use filter;
+use type_def::WorkOnWichPart;
 
 /* standard use */
+use std;
 
-pub struct SameName {
+pub struct SequenceLength {
+    length_threshold: u64,
+    ordering: std::cmp::Ordering,
 }
 
-impl SameName {
-    pub fn new() -> Self {
-        SameName { }
+impl SequenceLength {
+    pub fn new(length_threshold: u64, ord: std::cmp::Ordering) -> Self {
+        SequenceLength {
+            length_threshold: length_threshold,
+            ordering: ord,
+        }
     }
 }
 
-impl filter::Filter for SameName {
+impl filter::Filter for SequenceLength {
     fn run(self: &Self, r: &io::MappingRecord) -> bool {
-        return r.read_a() == r.read_b();
+        return r.length_a().cmp(&self.length_threshold) == self.ordering || r.length_b().cmp(&self.length_threshold) == self.ordering;
     }
 }
 
@@ -56,7 +62,7 @@ mod test {
                 begin_a         : 0,
                 end_a           : 5000,
                 strand          : '+',
-                read_b          : "read_1".to_string(),
+                read_b          : "read_2".to_string(),
                 length_b        : 20000,
                 begin_b         : 5000,
                 end_b           : 10000,
@@ -71,15 +77,23 @@ mod test {
 
     #[test]
     fn positif() {
-        let nm = SameName::new();
+        let mut nm = SequenceLength::new(5001, std::cmp::Ordering::Less);
 
         assert_eq!(nm.run(&*RECORD), true);
+
+        nm = SequenceLength::new(20001, std::cmp::Ordering::Greater);
+
+        assert_eq!(nm.run(&*RECORD), false);
     }
 
     #[test]
     fn negatif() {
-        let nm = SameName::new();
+        let mut nm = SequenceLength::new(5001, std::cmp::Ordering::Less);
 
         assert_ne!(nm.run(&*RECORD), false);
+
+        nm = SequenceLength::new(20001, std::cmp::Ordering::Greater);
+
+        assert_ne!(nm.run(&*RECORD), true);
     }
 }

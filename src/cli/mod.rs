@@ -161,6 +161,15 @@ pub trait Filters {
         if m.is_present("same_name") {
             self.add_filter(Box::new(filter::SameName::new()));
         }
+
+        if let Some(sequence_length_lower) = m.value_of("sequence_length_lower") {
+            self.add_filter(Box::new(filter::SequenceLength::new(sequence_length_lower.parse::<u64>().unwrap(), std::cmp::Ordering::Less)));
+        }
+        
+        if let Some(sequence_length_lower) = m.value_of("sequence_length_upper") {
+            self.add_filter(Box::new(filter::SequenceLength::new(sequence_length_lower.parse::<u64>().unwrap(), std::cmp::Ordering::Greater)));
+        }
+        
     }
 }
 

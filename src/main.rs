@@ -43,8 +43,8 @@ extern crate lazy_static;
 mod io;
 mod cli;
 mod file;
-//mod work;
 mod filter;
+mod type_def;
 mod generator;
 
 use cli::Filters;
