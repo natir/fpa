@@ -7,36 +7,50 @@ Filter output of all-against-all read mapping, you filter or select:
 - internal match
 - containment
 - dovetails
-- self matcing
+- self matching
 - read name match against regex
-
-All this filter can be revert.
+- length of overlap
+- length of read in overlap
 
 For internal match, containment, dovetails definition go read [algorithm 5 in minimap article](https://academic.oup.com/bioinformatics/article/32/14/2103/1742895/Minimap-and-miniasm-fast-mapping-and-de-novo)
+
+
+## Rationale
+
+Long Read mapping tools provides all match they found in read dataset, for many usage some of match aren't usfull, this programme provide some filter to remove it. 
+This soft can be replace by a simple awk, bash, python, ~perl~, {your favorite language}.
 
 ## Usage
 
 ```
-fpa <option> <input> <output> <subcommand>
+fpa -i <input> -o <output> <option> <subcommand: drop | keep | index | rename | gfa>
 ```
+
+Subcommand can be split in two group:
+- filters (drop, keep), select wich overlap are write in output
+- generators (index, rename, gfa), generate new data from overlap
 
 By default input and output are stdin and stdout so you can use like this:
 
 ```
-minimap2 long_read.fasta long_read.fasta | fpa -d | gzip - > long_read_dovetail.paf.gz
-minimap2 long_read.fasta long_read.fasta | fpa -l 500 -L 2000 > match_between_500_2000.paf
-minimap2 long_read.fasta long_read.fasta | fpa -s -m read_1 > no_self_match_no_read_1.paf
-minimap2 long_read.fasta long_read.fasta | fpa -s -r rename.csv > no_self_match_renamed_read_1.paf
-minimap2 long_read.fasta long_read.fasta | fpa -s -r rename.csv -o gfa1 > no_self_match_renamed_read_1.gfa
-minimap2 long_read.fasta long_read.fasta | fpa -l 500 index -f match_upper_500_query_index.paf.idx -t query  > match_upper_500.paf
-minimap2 long_read.fasta long_read.fasta | fpa -l 500 - match_upper_500.paf index -f match_upper_500_query_index.paf.idx -t query
+minimap2 long_read.fasta long_read.fasta | fpa keep -d | gzip - > only_dovetail.paf.gz
+minimap2 long_read.fasta long_read.fasta | fpa drop -l 500 -L 2000 > only_between_500_2000.paf
+minimap2 long_read.fasta long_read.fasta | fpa drop -s -m read_1 > no_self_no_match_read_1.paf
+minimap2 long_read.fasta long_read.fasta | fpa drop -s rename -o rename.csv > no_self_match_renamed.paf
+minimap2 long_read.fasta long_read.fasta | fpa drop -s rename -o rename.csv gfa -o no_self_match_renamed.gfa > no_self_match_renamed.paf
+minimap2 long_read.fasta long_read.fasta | fpa drop -l 500 index -t query -f match_upper_500.paf.idx query > match_upper_500.paf
+minimap2 long_read.fasta long_read.fasta | fpa -o match_upper_500.paf.bz2 -z bzip2 drop -l 500 index -f match_upper_500.paf.idx -t target 
 ```
 
-### Rename option
+### Generators
 
-The renaming option replaces the name of the read with another one.
+Only the mapping passed the filters are analyse by generators
 
-If the path passed in parameter exists, the file will be read as a two-column csv, the first column is the original name and the second corresponds to the new name:
+#### Rename
+
+The rename subcommand replaces the name of the read with another one.
+
+If you use `-i` option the file will be read as a two-column csv, the first column is the original name and the second corresponds to the new name:
 ```
 original name1, new name1
 original name2, new name2
@@ -44,9 +58,9 @@ original name2, new name2
 
 If the name of the read does not exist in the file it will not be replaced.
 
-If the path passed as parameter does not exist, the names will automatically be replaced by a number a file like above example will be created.
+If you use `-o`, the names will automatically be replaced by a number a file like above example will be created.
 
-### Index option
+#### Index
 
 fpa can build an index of offset of the records in the file where a reads appears. 
 
@@ -58,18 +72,9 @@ read_id2, start_of_range_1:end_of_range_1; start_of_range_2:end_of_range_2;…
 
 fpa can index read only when it's query (first read in record) or target (second read in record) or both of them.
 
-### Output mode
+#### Gfa
 
-You can get an output in gfa format with the -o option (--output-mode), two modes are available:
-- basic: the output and in the format that the input
-- gfa1: the output is in gfa1 format
-
-In gfa1 mode options -C and -I indicate that containments and internalmatches are included in the gfa (default option enabled), -c and -i indicate that containments and internalmatches should not be included.
-
-## Rationale
-
-Long Read mapping tools provides all match they found in read dataset, for many usage some of match aren't usfull, this programme provide some filter to remove it. 
-This soft can be replace by a simple awk, bash, python, ~perl~, {your favorite language}.
+fpa can generate an overlap graph with overlap pass filters
 
 ## Requirements
 
@@ -103,7 +108,7 @@ conda install fpa
 ```
 git clone https://github.com/natir/fpa.git
 cd fpa
-git checkout v0.3
+git checkout v0.5
 
 cargo build
 cargo test
