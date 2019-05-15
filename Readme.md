@@ -18,7 +18,9 @@ For internal match, containment, dovetails definition go read [algorithm 5 in mi
 ## Rationale
 
 Long Read mapping tools provides all match they found in read dataset, for many usage some of match aren't usfull, this programme provide some filter to remove it. 
-This soft can be replace by a simple awk, bash, python, ~perl~, {your favorite language}.
+This soft can be replace by a simple script in awk, bash, python, ~perl~, {your favorite language}.
+
+More details and some experiment are present in this [blog post](https://blog.pierre.marijon.fr/binary-mapping-format/)
 
 ## Usage
 
