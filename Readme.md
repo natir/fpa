@@ -20,7 +20,7 @@ For internal match, containment, dovetails definition go read [algorithm 5 in mi
 Long Read mapping tools provides all match they found in read dataset, for many usage some of match aren't usfull, this programme provide some filter to remove it. 
 This soft can be replace by a simple script in awk, bash, python, ~perl~, {your favorite language}.
 
-More details and some experiment are present in this [blog post](https://blog.pierre.marijon.fr/binary-mapping-format/)
+More details and some experiment are present in this [blog post](https://blog.pierre.marijon.fr/binary-mapping-format/). We have evaluated the effects of some fpa filter on miniasm assemblies, you can find scripts and how to get the real data sets in [this repository](https://gitlab.inria.fr/pmarijon/yacrd-and-fpa-upstream-tools-for-lr-genome-assembly).
 
 ## Usage
 
