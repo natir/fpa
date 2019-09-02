@@ -37,9 +37,9 @@ By default input and output are stdin and stdout so you can use like this:
 ```
 minimap2 long_read.fasta long_read.fasta | fpa keep -d | gzip - > only_dovetail.paf.gz
 minimap2 long_read.fasta long_read.fasta | fpa drop -l 500 -L 2000 > only_between_500_2000.paf
-minimap2 long_read.fasta long_read.fasta | fpa drop -s -m read_1 > no_self_no_match_read_1.paf
-minimap2 long_read.fasta long_read.fasta | fpa drop -s rename -o rename.csv > no_self_match_renamed.paf
-minimap2 long_read.fasta long_read.fasta | fpa drop -s rename -o rename.csv gfa -o no_self_match_renamed.gfa > no_self_match_renamed.paf
+minimap2 long_read.fasta long_read.fasta | fpa drop -m -n read_1 > no_self_no_match_read_1.paf
+minimap2 long_read.fasta long_read.fasta | fpa drop -m rename -o rename.csv > no_self_match_renamed.paf
+minimap2 long_read.fasta long_read.fasta | fpa drop -m rename -o rename.csv gfa -o no_self_match_renamed.gfa > no_self_match_renamed.paf
 minimap2 long_read.fasta long_read.fasta | fpa drop -l 500 index -t query -f match_upper_500.paf.idx query > match_upper_500.paf
 minimap2 long_read.fasta long_read.fasta | fpa -o match_upper_500.paf.bz2 -z bzip2 drop -l 500 index -f match_upper_500.paf.idx -t target 
 ```
