@@ -122,19 +122,20 @@ cargo install
 If you use fpa in your research, please cite the following publication:
 
 ```
-Pierre Marijon, Rayan Chikhi, Jean-Stéphane Varré, yacrd and fpa: upstream tools for long-read genome assembly
+Pierre Marijon, Rayan Chikhi, Jean-Stéphane Varré, yacrd and fpa: upstream tools for long-read genome assembly, Bioinformatics, btaa262, https://doi.org/10.1093/bioinformatics/btaa262
 ```
 
 bibtex format:
 ```
-@article {Marijon2019,
-	author = {Marijon, Pierre and Chikhi, Rayan and Varr{\'e}, Jean-St{\'e}phane},
+@article {@article{Marijon_2020,
+	doi = {10.1093/bioinformatics/btaa262},
+	url = {https://doi.org/10.1093%2Fbioinformatics%2Fbtaa262},
+	year = 2020,
+	month = {apr},
+	publisher = {Oxford University Press ({OUP})},
+	author = {Pierre Marijon and Rayan Chikhi and Jean-St{\'{e}}phane Varr{\'{e}}},
+	editor = {Inanc Birol},
 	title = {yacrd and fpa: upstream tools for long-read genome assembly},
-	elocation-id = {674036},
-	year = {2019},
-	doi = {10.1101/674036},
-	URL = {https://www.biorxiv.org/content/early/2019/06/18/674036},
-	eprint = {https://www.biorxiv.org/content/early/2019/06/18/674036.full.pdf},
-	journal = {bioRxiv}
+	journal = {Bioinformatics}
 }
 ```
