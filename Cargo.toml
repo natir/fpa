@@ -17,14 +17,13 @@ travis-ci = { repository = "natir/fpa", branch = "master" }
 
 [dependencies]
 csv            = "1"
-clap           = "2.31.2"
+clap           = "2"
 regex          = "1"
-serde          = "1.0"
+serde          = "1"
 niffler        = "2"
 petgraph       = "0.4"
 lazy_static    = "1"
-serde_derive   = "1.0"
-enum_primitive = "0.1.1"
+serde_derive   = "1"
 
 [[bin]]
 name = "fpa"
