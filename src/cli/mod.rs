@@ -42,7 +42,7 @@ use clap::{App, Arg, ArgMatches};
 
 pub fn app<'a, 'b>() -> App<'a, 'b> {
     App::new("fpa")
-        .version("0.5 Krabby")
+        .version("0.5.1 Sandslash")
         .author("Pierre Marijon <pierre.marijon@inria.fr>")
         .about("fpa take long read mapping information and filter them")
         .arg(Arg::with_name("input")
