@@ -21,47 +21,49 @@ SOFTWARE.
  */
 
 /* project use */
-use io;
-use filter;
+use crate::filter;
+use crate::io;
 
-use cli::Filters;
+use crate::cli::Filters;
 
 pub struct Keep {
-    filters: Vec<Box<filter::Filter>>,
+    filters: Vec<Box<dyn filter::Filter>>,
     internal_threshold: f64,
 }
 
 impl Keep {
-    pub fn new(internal_match: f64, matches: &std::collections::HashMap<String, clap::ArgMatches>) -> Self {
+    pub fn new(
+        internal_match: f64,
+        matches: &std::collections::HashMap<String, clap::ArgMatches>,
+    ) -> Self {
         let filters = Vec::new();
         let mut k = Keep {
-            filters: filters,
+            filters,
             internal_threshold: internal_match,
         };
 
         if let Some(keep) = matches.get("keep") {
             k.generate(keep);
         }
-        
-        return k;
+
+        k
     }
 }
 
 impl Filters for Keep {
-    fn pass(&self, r: &io::MappingRecord) -> bool {
-        return if self.filters.is_empty() {
-            return true
+    fn pass(&self, r: &dyn io::MappingRecord) -> bool {
+        if self.filters.is_empty() {
+            true
         } else {
             self.filters.iter().all(|ref x| x.run(r))
-        };
+        }
     }
 
     fn internal_match(&self) -> f64 {
         self.internal_threshold
     }
-    
-    fn add_filter(&mut self, f: Box<filter::Filter>) {
+
+    fn add_filter(&mut self, f: Box<dyn filter::Filter>) {
         self.filters.push(f);
     }
 }
-

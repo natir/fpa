@@ -20,13 +20,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
 /* project use */
-use io;
-use filter;
+use crate::filter;
+use crate::io;
 
 /* standard use */
-use std::cmp::{min, max};
+use std::cmp::{max, min};
 
 pub struct InternalMatch {
     internal_threshold: f64,
@@ -34,15 +33,12 @@ pub struct InternalMatch {
 
 impl InternalMatch {
     pub fn new(internal_threshold: f64) -> Self {
-        InternalMatch {
-            internal_threshold: internal_threshold,
-        }
+        InternalMatch { internal_threshold }
     }
 }
 
 impl filter::Filter for InternalMatch {
-    fn run(self: &Self, r: &io::MappingRecord) -> bool {
-
+    fn run(self: &Self, r: &dyn io::MappingRecord) -> bool {
         let overhang = if r.strand() == '+' {
             min(r.begin_a(), r.begin_b()) + min(r.length_a() - r.end_a(), r.length_b() - r.end_b())
         } else {
@@ -51,7 +47,7 @@ impl filter::Filter for InternalMatch {
 
         let maplen = max(r.end_a() - r.begin_a(), r.end_b() - r.begin_b());
 
-        return overhang > min(1000, (maplen as f64 * self.internal_threshold) as u64);
+        overhang > min(1000, (maplen as f64 * self.internal_threshold) as u64)
     }
 }
 
@@ -64,22 +60,22 @@ mod test {
     lazy_static! {
         static ref RECORD: io::paf::Record = {
             io::paf::Record {
-                read_a          : "read_1".to_string(),
-                length_a        : 20000,
-                begin_a         : 500,
-                end_a           : 1000,
-                strand          : '+',
-                read_b          : "read_2".to_string(),
-                length_b        : 20000,
-                begin_b         : 5000,
-                end_b           : 5500,
-                nb_match_base   : 500,
-                nb_base         : 500,
-                mapping_quality : 255,
-                sam_field       : Vec::new(),
-                position        : (0, 50),
+                read_a: "read_1".to_string(),
+                length_a: 20000,
+                begin_a: 500,
+                end_a: 1000,
+                strand: '+',
+                read_b: "read_2".to_string(),
+                length_b: 20000,
+                begin_b: 5000,
+                end_b: 5500,
+                nb_match_base: 500,
+                nb_base: 500,
+                mapping_quality: 255,
+                sam_field: Vec::new(),
+                position: (0, 50),
             }
-        }; 
+        };
     }
 
     #[test]

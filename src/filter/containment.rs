@@ -20,10 +20,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
 /* project use */
-use io;
-use filter;
+use crate::filter;
+use crate::io;
 
 /* standard use */
 
@@ -33,39 +32,20 @@ pub struct Containment {
 
 impl Containment {
     pub fn new(internal_threshold: f64) -> Self {
-        Containment {
-            internal_threshold: internal_threshold,
-        }
+        Containment { internal_threshold }
     }
 }
 
 impl filter::Filter for Containment {
-    fn run(self: &Self, r: &io::MappingRecord) -> bool {
-        match filter::InternalMatch::new(self.internal_threshold).run(r) {
-            true => return false,
-            false => (),
-        };
+    fn run(self: &Self, r: &dyn io::MappingRecord) -> bool {
+	if filter::InternalMatch::new(self.internal_threshold).run(r) {
+	    return false
+	}
 
-
-        if r.strand() == '+' && r.begin_a() <= r.begin_b() &&
-            r.length_a() - r.end_a() < r.length_b() - r.end_b()
-        {
-            return true;
-        } else if r.strand() == '-' && r.begin_a() <= r.length_b() - r.end_b() &&
-                   r.length_a() - r.end_a() < r.begin_b()
-        {
-            return true;
-        } else if r.strand() == '+' && r.begin_a() >= r.begin_b() &&
-                   r.length_a() - r.end_a() > r.length_b() - r.end_b()
-        {
-            return true;
-        } else if r.strand() == '-' && r.begin_a() >= r.length_b() - r.end_b() &&
-                   r.length_a() - r.end_a() > r.begin_b()
-        {
-            return true;
-        } else {
-            return false;
-        }
+	(r.strand() == '+' && r.begin_a() <= r.begin_b() && r.length_a() - r.end_a() < r.length_b() - r.end_b()) ||
+	    (r.strand() == '-' && r.begin_a() <= r.length_b() - r.end_b() && r.length_a() - r.end_a() < r.begin_b()) ||
+	    (r.strand() == '+' && r.begin_a() >= r.begin_b() && r.length_a() - r.end_a() > r.length_b() - r.end_b()) ||
+	    (r.strand() == '-' && r.begin_a() >= r.length_b() - r.end_b() && r.length_a() - r.end_a() > r.begin_b())
     }
 }
 
@@ -78,22 +58,22 @@ mod test {
     lazy_static! {
         static ref RECORD: io::paf::Record = {
             io::paf::Record {
-                read_a          : "read_1".to_string(),
-                length_a        : 5000,
-                begin_a         : 0,
-                end_a           : 5000,
-                strand          : '+',
-                read_b          : "read_2".to_string(),
-                length_b        : 20000,
-                begin_b         : 5000,
-                end_b           : 10000,
-                nb_match_base   : 500,
-                nb_base         : 500,
-                mapping_quality : 255,
-                sam_field       : Vec::new(),
-                position        : (0, 50),
+                read_a: "read_1".to_string(),
+                length_a: 5000,
+                begin_a: 0,
+                end_a: 5000,
+                strand: '+',
+                read_b: "read_2".to_string(),
+                length_b: 20000,
+                begin_b: 5000,
+                end_b: 10000,
+                nb_match_base: 500,
+                nb_base: 500,
+                mapping_quality: 255,
+                sam_field: Vec::new(),
+                position: (0, 50),
             }
-        }; 
+        };
     }
 
     #[test]

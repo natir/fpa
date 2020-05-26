@@ -21,13 +21,9 @@ SOFTWARE.
  */
 
 /* local use */
-use io;
-
-/* crates use */
-use csv;
+use crate::io;
 
 /* standard use */
-use std;
 use std::cmp::min;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -96,11 +92,11 @@ impl io::MappingRecord for Record {
     fn length(self: &Self) -> u64 {
         min(self.end_a - self.begin_a, self.end_b - self.begin_b)
     }
-    
+
     fn len_to_end_a(self: &Self) -> u64 {
         self.length_a - self.end_a
     }
-    
+
     fn len_to_end_b(self: &Self) -> u64 {
         self.length_b - self.end_b
     }
@@ -113,7 +109,20 @@ impl io::MappingRecord for Record {
     }
 }
 
-type RecordInner = (String, u64, u64, u64, char, String, u64, u64, u64, u64, u64, Vec<String>);
+type RecordInner = (
+    String,
+    u64,
+    u64,
+    u64,
+    char,
+    String,
+    u64,
+    u64,
+    u64,
+    u64,
+    u64,
+    Vec<String>,
+);
 
 pub struct Records<'a, R: 'a + std::io::Read> {
     inner: csv::DeserializeRecordsIter<'a, R, RecordInner>,
@@ -125,28 +134,8 @@ impl<'a, R: std::io::Read> Iterator for Records<'a, R> {
     fn next(&mut self) -> Option<csv::Result<Record>> {
         let position = self.inner.reader().position().byte();
         self.inner.next().map(|res| {
-            res.map(|(read_a,
-                      length_a,
-                      begin_a,
-                      end_a,
-                      strand,
-                      read_b,
-                      length_b,
-                      begin_b,
-                      end_b,
-                      nb_match_base,
-                      nb_base,
-                      mapping_quality_and_sam,
-            )| {
-                let mapping_quality = mapping_quality_and_sam[0].parse::<u64>().unwrap();
-
-                let mut sam_field = Vec::new();
-                if mapping_quality_and_sam.len() > 1 {
-                    sam_field = mapping_quality_and_sam[1..].to_vec();
-                }
-
-                let new_position = self.inner.reader().position().byte();
-                Record {
+            res.map(
+                |(
                     read_a,
                     length_a,
                     begin_a,
@@ -158,11 +147,35 @@ impl<'a, R: std::io::Read> Iterator for Records<'a, R> {
                     end_b,
                     nb_match_base,
                     nb_base,
-                    mapping_quality,
-                    sam_field,
-                    position:  (position, new_position),
-                }
-            })
+                    mapping_quality_and_sam,
+                )| {
+                    let mapping_quality = mapping_quality_and_sam[0].parse::<u64>().unwrap();
+
+                    let sam_field = if mapping_quality_and_sam.len() > 1 {
+                        mapping_quality_and_sam[1..].to_vec()
+                    } else {
+			Vec::new()
+		    };
+
+                    let new_position = self.inner.reader().position().byte();
+                    Record {
+                        read_a,
+                        length_a,
+                        begin_a,
+                        end_a,
+                        strand,
+                        read_b,
+                        length_b,
+                        begin_b,
+                        end_b,
+                        nb_match_base,
+                        nb_base,
+                        mapping_quality,
+                        sam_field,
+                        position: (position, new_position),
+                    }
+                },
+            )
         })
     }
 }
@@ -184,7 +197,9 @@ impl<R: std::io::Read> Reader<R> {
 
     /// Iterate over all records.
     pub fn records(&mut self) -> Records<R> {
-        Records { inner: self.inner.deserialize() }
+        Records {
+            inner: self.inner.deserialize(),
+        }
     }
 }
 
@@ -193,7 +208,7 @@ pub struct Writer<W: std::io::Write> {
     inner: csv::Writer<W>,
 }
 
-impl<W: std::io::Write> Writer< W> {
+impl<W: std::io::Write> Writer<W> {
     /// Write to a given writer.
     pub fn new(writer: W) -> Self {
         Writer {
@@ -213,7 +228,7 @@ impl<W: std::io::Write> Writer< W> {
             .has_headers(false)
             .flexible(true)
             .from_writer(buffer);
-        
+
         wrapper.serialize((
             &record.read_a,
             record.length_a,
@@ -231,7 +246,7 @@ impl<W: std::io::Write> Writer< W> {
         ))?;
 
         let nb_bytes = wrapper.into_inner().unwrap().len() as u64;
-        
+
         self.inner.serialize((
             &record.read_a,
             record.length_a,
@@ -248,8 +263,7 @@ impl<W: std::io::Write> Writer< W> {
             &record.sam_field,
         ))?;
 
-        
-        return Ok(nb_bytes);
+        Ok(nb_bytes)
     }
 }
 
@@ -262,7 +276,8 @@ mod test {
 1\t12000\t5500\t10000\t-\t3\t10000\t0\t4500\t4500\t4500\t255
 ";
 
-    const PAF_SAM_FIELD_FILE: &'static [u8] = b"1\t12000\t20\t4500\t-\t2\t10000\t5500\t10000\t4500\t4500\t255\tam:I:5
+    const PAF_SAM_FIELD_FILE: &'static [u8] =
+        b"1\t12000\t20\t4500\t-\t2\t10000\t5500\t10000\t4500\t4500\t255\tam:I:5
 1\t12000\t5500\t10000\t-\t3\t10000\t0\t4500\t4500\t4500\t255\ttest:B:true\tam:I:5
 ";
 

@@ -2,6 +2,7 @@
 name = "fpa_lr"
 version = "0.5.0"
 authors = ["Pierre Marijon <pierre.marijon@inria.fr>"]
+edition = "2018"
 
 description = "fpa filter long read mapping information to save disk space"
 
@@ -16,12 +17,10 @@ travis-ci = { repository = "natir/fpa", branch = "master" }
 
 [dependencies]
 csv            = "1"
-xz2            = "0.1"
 clap           = "2.31.2"
 regex          = "1"
-bzip2          = "0.3.3"
 serde          = "1.0"
-flate2         = "1.0"
+niffler        = "2"
 petgraph       = "0.4"
 lazy_static    = "1"
 serde_derive   = "1.0"

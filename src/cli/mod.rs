@@ -20,10 +20,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-
 /* project use */
-use io;
-use filter;
+use crate::filter;
+use crate::io;
 
 /* local use */
 pub mod subcommand;
@@ -86,8 +85,16 @@ pub fn app<'a, 'b>() -> App<'a, 'b> {
         .subcommand(subcommand::get_gfa())
 }
 
-pub fn get_subcmd<'a, 'b>(app: &mut App<'a, 'b>) -> std::collections::HashMap<String, ArgMatches<'a>> {
-    let basic_cli = vec!["fpa".to_string(), "-i".to_string(), "foo".to_string(), "-o".to_string(), "bar".to_string()];
+pub fn get_subcmd<'a, 'b>(
+    app: &mut App<'a, 'b>,
+) -> std::collections::HashMap<String, ArgMatches<'a>> {
+    let basic_cli = vec![
+        "fpa".to_string(),
+        "-i".to_string(),
+        "foo".to_string(),
+        "-o".to_string(),
+        "bar".to_string(),
+    ];
     let mut sub2matches = std::collections::HashMap::new();
 
     let mut cli: Vec<String> = std::env::args().collect();
@@ -102,7 +109,7 @@ pub fn get_subcmd<'a, 'b>(app: &mut App<'a, 'b>) -> std::collections::HashMap<St
             (n, Some(s)) => (n, s),
             (_, None) => break,
         };
-        
+
         sub2matches.insert(name.to_string(), sub.clone());
 
         let (subname, subsub) = match sub.subcommand() {
@@ -110,66 +117,74 @@ pub fn get_subcmd<'a, 'b>(app: &mut App<'a, 'b>) -> std::collections::HashMap<St
             (_, None) => break,
         };
 
-
         if subsub.values_of("").is_none() {
             break;
         }
-        
+
         /* rebuild a new cli*/
         cli = basic_cli.clone();
         cli.push(subname.to_string());
         cli.extend(subsub.values_of("").unwrap().map(|x| x.to_string()));
     }
-        
-    return sub2matches;
+
+    sub2matches
 }
 
 pub trait Filters {
-    fn pass(&self, r: &io::MappingRecord) -> bool;
-    
+    fn pass(&self, r: &dyn io::MappingRecord) -> bool;
+
     fn internal_match(&self) -> f64;
 
-    fn add_filter(&mut self, f: Box<filter::Filter>);
-    
-    fn generate(&mut self, m: &clap::ArgMatches) {
+    fn add_filter(&mut self, f: Box<dyn filter::Filter>);
 
+    fn generate(&mut self, m: &clap::ArgMatches) {
         let internal_match = self.internal_match();
         if m.is_present("containment") {
             self.add_filter(Box::new(filter::Containment::new(internal_match)));
         }
-        
+
         if m.is_present("internalmatch") {
             self.add_filter(Box::new(filter::InternalMatch::new(internal_match)));
         }
-        
+
         if m.is_present("dovetail") {
             self.add_filter(Box::new(filter::Dovetails::new(internal_match)));
         }
-        
+
         if let Some(length_lower) = m.value_of("length_lower") {
-            self.add_filter(Box::new(filter::Length::new(length_lower.parse::<u64>().unwrap(), std::cmp::Ordering::Less)));
+            self.add_filter(Box::new(filter::Length::new(
+                length_lower.parse::<u64>().unwrap(),
+                std::cmp::Ordering::Less,
+            )));
         }
-        
+
         if let Some(length_lower) = m.value_of("length_upper") {
-            self.add_filter(Box::new(filter::Length::new(length_lower.parse::<u64>().unwrap(), std::cmp::Ordering::Greater)));
+            self.add_filter(Box::new(filter::Length::new(
+                length_lower.parse::<u64>().unwrap(),
+                std::cmp::Ordering::Greater,
+            )));
         }
-        
+
         if let Some(name_match) = m.value_of("name_match") {
             self.add_filter(Box::new(filter::NameMatch::new(name_match)));
         }
-        
+
         if m.is_present("same_name") {
             self.add_filter(Box::new(filter::SameName::new()));
         }
-        
+
         if let Some(sequence_length_lower) = m.value_of("sequence_length_lower") {
-            self.add_filter(Box::new(filter::SequenceLength::new(sequence_length_lower.parse::<u64>().unwrap(), std::cmp::Ordering::Less)));
+            self.add_filter(Box::new(filter::SequenceLength::new(
+                sequence_length_lower.parse::<u64>().unwrap(),
+                std::cmp::Ordering::Less,
+            )));
         }
-        
+
         if let Some(sequence_length_lower) = m.value_of("sequence_length_upper") {
-            self.add_filter(Box::new(filter::SequenceLength::new(sequence_length_lower.parse::<u64>().unwrap(), std::cmp::Ordering::Greater)));
+            self.add_filter(Box::new(filter::SequenceLength::new(
+                sequence_length_lower.parse::<u64>().unwrap(),
+                std::cmp::Ordering::Greater,
+            )));
         }
     }
 }
-
-

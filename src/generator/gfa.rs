@@ -20,14 +20,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
 /* std use */
 
 /* crate use */
 
 /* projet use */
-use io;
-use generator;
+use crate::generator;
+use crate::io;
 
 pub struct Gfa1 {
     gfa_path: String,
@@ -35,16 +34,21 @@ pub struct Gfa1 {
 }
 
 impl Gfa1 {
-    pub fn new(gfa_path: String, keep_internal: bool, keep_containment: bool, internal_threshold: f64) -> Self {
+    pub fn new(
+        gfa_path: String,
+        keep_internal: bool,
+        keep_containment: bool,
+        internal_threshold: f64,
+    ) -> Self {
         Gfa1 {
-            gfa_path: gfa_path,
+            gfa_path,
             gfa_object: io::gfa::Gfa1::new(keep_internal, keep_containment, internal_threshold),
         }
     }
 }
 
 impl generator::Modifier for Gfa1 {
-    fn run(self: &mut Self, r: &mut io::MappingRecord) {
+    fn run(self: &mut Self, r: &mut dyn io::MappingRecord) {
         self.gfa_object.add(r);
     }
 

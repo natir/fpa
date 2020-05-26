@@ -20,11 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
-use io;
+use crate::io;
 
 pub trait Filter {
-    fn run(self: &Self, r: &io::MappingRecord) -> bool;
+    fn run(self: &Self, r: &dyn io::MappingRecord) -> bool;
 }
 
 pub mod length;

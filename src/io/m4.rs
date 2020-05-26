@@ -21,15 +21,11 @@ SOFTWARE.
 */
 
 /* local use */
-use io;
-
-/* crates use */
-use csv;
+use crate::io;
 
 /* standard use */
-use std;
-use std::fs;
 use std::cmp::min;
+use std::fs;
 use std::path::Path;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -67,11 +63,11 @@ impl io::MappingRecord for Record {
     }
 
     fn strand(self: &Self) -> char {
-        return if self.strand_a == self.strand_b {
+        if self.strand_a == self.strand_b {
             '+'
         } else {
             '-'
-        };
+        }
     }
 
     fn read_b(self: &Self) -> String {
@@ -89,7 +85,7 @@ impl io::MappingRecord for Record {
     fn end_b(self: &Self) -> u64 {
         self.end_b
     }
-    
+
     fn position(self: &Self) -> (u64, u64) {
         self.position
     }
@@ -101,7 +97,7 @@ impl io::MappingRecord for Record {
     fn length(self: &Self) -> u64 {
         min(self.end_a - self.begin_a, self.end_b - self.begin_b)
     }
-    
+
     fn len_to_end_a(self: &Self) -> u64 {
         self.length_a - self.end_a
     }
@@ -117,7 +113,20 @@ impl io::MappingRecord for Record {
     }
 }
 
-type RecordInner = (String, String, f64, f64, char, u64, u64, u64, char, u64, u64, u64);
+type RecordInner = (
+    String,
+    String,
+    f64,
+    f64,
+    char,
+    u64,
+    u64,
+    u64,
+    char,
+    u64,
+    u64,
+    u64,
+);
 
 pub struct Records<'a, R: 'a + std::io::Read> {
     inner: csv::DeserializeRecordsIter<'a, R, RecordInner>,
@@ -129,21 +138,8 @@ impl<'a, R: std::io::Read> Iterator for Records<'a, R> {
     fn next(&mut self) -> Option<csv::Result<Record>> {
         let position = self.inner.reader().position().byte();
         self.inner.next().map(|res| {
-            res.map(|(read_a,
-              read_b,
-              error,
-              shared_min_mers,
-              strand_a,
-              begin_a,
-              end_a,
-              length_a,
-              strand_b,
-              begin_b,
-              end_b,
-              length_b)| {
-                let new_position = self.inner.reader().position().byte();
-                    
-                Record {
+            res.map(
+                |(
                     read_a,
                     read_b,
                     error,
@@ -156,9 +152,26 @@ impl<'a, R: std::io::Read> Iterator for Records<'a, R> {
                     begin_b,
                     end_b,
                     length_b,
-                    position: (position, new_position),
-                }
-            })
+                )| {
+                    let new_position = self.inner.reader().position().byte();
+
+                    Record {
+                        read_a,
+                        read_b,
+                        error,
+                        shared_min_mers,
+                        strand_a,
+                        begin_a,
+                        end_a,
+                        length_a,
+                        strand_b,
+                        begin_b,
+                        end_b,
+                        length_b,
+                        position: (position, new_position),
+                    }
+                },
+            )
         })
     }
 }
@@ -180,7 +193,9 @@ impl<R: std::io::Read> Reader<R> {
 
     /// Iterate over all records.
     pub fn records(&mut self) -> Records<R> {
-        Records { inner: self.inner.deserialize() }
+        Records {
+            inner: self.inner.deserialize(),
+        }
     }
 }
 
@@ -193,7 +208,7 @@ impl Writer<fs::File> {
     /// Write to a given file path in given format.
     #[allow(dead_code)]
     pub fn to_file<P: AsRef<Path>>(path: P) -> std::io::Result<Self> {
-        fs::File::create(path).map(|f| Writer::new(f))
+        fs::File::create(path).map(Writer::new)
     }
 }
 
@@ -209,15 +224,15 @@ impl<W: std::io::Write> Writer<W> {
         }
     }
 
-    /// Write a given GFF record.
+    /// Write a given Blasr m4 record.
     pub fn write(&mut self, record: &Record) -> csv::Result<u64> {
-                let buffer: Vec<u8> = Vec::new();
+        let buffer: Vec<u8> = Vec::new();
         let mut wrapper = csv::WriterBuilder::new()
             .delimiter(b'\t')
             .has_headers(false)
             .flexible(true)
             .from_writer(buffer);
-        
+
         wrapper.serialize((
             &record.read_a,
             &record.read_b,
@@ -234,7 +249,7 @@ impl<W: std::io::Write> Writer<W> {
         ))?;
 
         let nb_bytes = wrapper.into_inner().unwrap().len() as u64;
-        
+
         self.inner.serialize((
             &record.read_a,
             &record.read_b,
@@ -250,8 +265,7 @@ impl<W: std::io::Write> Writer<W> {
             record.length_b,
         ))?;
 
-        
-        return Ok(nb_bytes);
+        Ok(nb_bytes)
     }
 }
 

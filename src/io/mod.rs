@@ -20,9 +20,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-pub mod paf;
-pub mod m4;
 pub mod gfa;
+pub mod m4;
+pub mod paf;
 
 pub trait MappingRecord {
     fn read_a(self: &Self) -> String;
@@ -36,7 +36,7 @@ pub trait MappingRecord {
     fn end_b(self: &Self) -> u64;
     fn position(self: &Self) -> (u64, u64);
     fn set_position(self: &mut Self, p: (u64, u64));
-    
+
     fn length(self: &Self) -> u64;
 
     fn len_to_end_a(self: &Self) -> u64;

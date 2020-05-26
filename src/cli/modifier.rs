@@ -21,45 +21,48 @@ SOFTWARE.
  */
 
 /* project use */
-use io;
-use generator;
+use crate::generator;
+use crate::io;
 
 pub struct Modifier {
-    modifiers: Vec<Box<generator::Modifier>>,
+    modifiers: Vec<Box<dyn generator::Modifier>>,
 }
 
 impl Modifier {
-    pub fn new(internal_match: f64, matches: &std::collections::HashMap<String, clap::ArgMatches>) -> Self {
-        let mut modifiers: Vec<Box<generator::Modifier>> = Vec::new();
+    pub fn new(
+        internal_match: f64,
+        matches: &std::collections::HashMap<String, clap::ArgMatches>,
+    ) -> Self {
+        let mut modifiers: Vec<Box<dyn generator::Modifier>> = Vec::new();
 
         if let Some(m) = matches.get("rename") {
             if m.is_present("input") {
-                modifiers.push(Box::new(generator::Renaming::new(m.value_of("input").unwrap(), true)));
+                modifiers.push(Box::new(generator::Renaming::new(
+                    m.value_of("input").unwrap(),
+                    true,
+                )));
             } else if m.is_present("output") {
-                modifiers.push(Box::new(generator::Renaming::new(m.value_of("output").unwrap(), false)));
+                modifiers.push(Box::new(generator::Renaming::new(
+                    m.value_of("output").unwrap(),
+                    false,
+                )));
             }
         }
 
         if let Some(m) = matches.get("gfa") {
-            modifiers.push(
-                Box::new(
-                    generator::Gfa1::new(
-                        m.value_of("output").unwrap().to_string(),
-                        m.is_present("internalmatch"),
-                        m.is_present("containment"),
-                        internal_match
-                    )
-                )
-            )
+            modifiers.push(Box::new(generator::Gfa1::new(
+                m.value_of("output").unwrap().to_string(),
+                m.is_present("internalmatch"),
+                m.is_present("containment"),
+                internal_match,
+            )))
         }
-        
-        Modifier {
-            modifiers: modifiers,
-        }
+
+        Modifier { modifiers }
     }
 
-    pub fn pass(&mut self, r: &mut io::MappingRecord) {
-        for mut m in self.modifiers.iter_mut() {
+    pub fn pass(&mut self, r: &mut dyn io::MappingRecord) {
+        for m in self.modifiers.iter_mut() {
             m.run(r);
         }
     }

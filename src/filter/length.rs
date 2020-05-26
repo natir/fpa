@@ -21,11 +21,8 @@ SOFTWARE.
 */
 
 /* project use */
-use io;
-use filter;
-
-/* standard use */
-use std;
+use crate::filter;
+use crate::io;
 
 pub struct Length {
     length_threshold: u64,
@@ -35,15 +32,15 @@ pub struct Length {
 impl Length {
     pub fn new(length_threshold: u64, ord: std::cmp::Ordering) -> Self {
         Length {
-            length_threshold: length_threshold,
+            length_threshold,
             ordering: ord,
         }
     }
 }
 
 impl filter::Filter for Length {
-    fn run(self: &Self, r: &io::MappingRecord) -> bool {
-        return r.length().cmp(&self.length_threshold) == self.ordering;
+    fn run(self: &Self, r: &dyn io::MappingRecord) -> bool {
+        r.length().cmp(&self.length_threshold) == self.ordering
     }
 }
 
@@ -56,22 +53,22 @@ mod test {
     lazy_static! {
         static ref RECORD: io::paf::Record = {
             io::paf::Record {
-                read_a          : "read_1".to_string(),
-                length_a        : 5000,
-                begin_a         : 0,
-                end_a           : 5000,
-                strand          : '+',
-                read_b          : "read_2".to_string(),
-                length_b        : 20000,
-                begin_b         : 5000,
-                end_b           : 10000,
-                nb_match_base   : 500,
-                nb_base         : 500,
-                mapping_quality : 255,
-                sam_field       : Vec::new(),
-                position        : (0, 50),
+                read_a: "read_1".to_string(),
+                length_a: 5000,
+                begin_a: 0,
+                end_a: 5000,
+                strand: '+',
+                read_b: "read_2".to_string(),
+                length_b: 20000,
+                begin_b: 5000,
+                end_b: 10000,
+                nb_match_base: 500,
+                nb_base: 500,
+                mapping_quality: 255,
+                sam_field: Vec::new(),
+                position: (0, 50),
             }
-        }; 
+        };
     }
 
     #[test]

@@ -20,11 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
-use io;
+use crate::io;
 
 pub trait Modifier {
-    fn run(self: &mut Self, r: &mut io::MappingRecord);
+    fn run(self: &mut Self, r: &mut dyn io::MappingRecord);
 
     fn write(self: &mut Self);
 }
@@ -37,4 +36,3 @@ pub use self::indexing::Indexing;
 
 pub mod gfa;
 pub use self::gfa::Gfa1;
-

@@ -20,10 +20,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
 /* project use */
-use io;
-use filter;
+use crate::filter;
+use crate::io;
 
 /* standard use */
 
@@ -33,15 +32,14 @@ pub struct Dovetails {
 
 impl Dovetails {
     pub fn new(internal_threshold: f64) -> Self {
-        Dovetails {
-            internal_threshold: internal_threshold,
-        }
+        Dovetails { internal_threshold }
     }
 }
 
 impl filter::Filter for Dovetails {
-    fn run(self: &Self, r: &io::MappingRecord) -> bool {
-        return !filter::InternalMatch::new(self.internal_threshold).run(r) && !filter::Containment::new(self.internal_threshold).run(r);
+    fn run(self: &Self, r: &dyn io::MappingRecord) -> bool {
+        !filter::InternalMatch::new(self.internal_threshold).run(r)
+            && !filter::Containment::new(self.internal_threshold).run(r)
     }
 }
 
@@ -54,22 +52,22 @@ mod test {
     lazy_static! {
         static ref RECORD: io::paf::Record = {
             io::paf::Record {
-                read_a          : "read_1".to_string(),
-                length_a        : 20000,
-                begin_a         : 15000,
-                end_a           : 20000,
-                strand          : '+',
-                read_b          : "read_2".to_string(),
-                length_b        : 20000,
-                begin_b         : 0,
-                end_b           : 15000,
-                nb_match_base   : 500,
-                nb_base         : 500,
-                mapping_quality : 255,
-                sam_field       : Vec::new(),
-                position        : (0, 50),
+                read_a: "read_1".to_string(),
+                length_a: 20000,
+                begin_a: 15000,
+                end_a: 20000,
+                strand: '+',
+                read_b: "read_2".to_string(),
+                length_b: 20000,
+                begin_b: 0,
+                end_b: 15000,
+                nb_match_base: 500,
+                nb_base: 500,
+                mapping_quality: 255,
+                sam_field: Vec::new(),
+                position: (0, 50),
             }
-        }; 
+        };
     }
 
     #[test]

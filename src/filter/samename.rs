@@ -20,25 +20,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
 /* project use */
-use io;
-use filter;
+use crate::filter;
+use crate::io;
 
 /* standard use */
 
-pub struct SameName {
-}
+pub struct SameName {}
 
 impl SameName {
     pub fn new() -> Self {
-        SameName { }
+        SameName {}
     }
 }
 
 impl filter::Filter for SameName {
-    fn run(self: &Self, r: &io::MappingRecord) -> bool {
-        return r.read_a() == r.read_b();
+    fn run(self: &Self, r: &dyn io::MappingRecord) -> bool {
+        r.read_a() == r.read_b()
     }
 }
 
@@ -51,22 +49,22 @@ mod test {
     lazy_static! {
         static ref RECORD: io::paf::Record = {
             io::paf::Record {
-                read_a          : "read_1".to_string(),
-                length_a        : 5000,
-                begin_a         : 0,
-                end_a           : 5000,
-                strand          : '+',
-                read_b          : "read_1".to_string(),
-                length_b        : 20000,
-                begin_b         : 5000,
-                end_b           : 10000,
-                nb_match_base   : 500,
-                nb_base         : 500,
-                mapping_quality : 255,
-                sam_field       : Vec::new(),
-                position        : (0, 50),
+                read_a: "read_1".to_string(),
+                length_a: 5000,
+                begin_a: 0,
+                end_a: 5000,
+                strand: '+',
+                read_b: "read_1".to_string(),
+                length_b: 20000,
+                begin_b: 5000,
+                end_b: 10000,
+                nb_match_base: 500,
+                nb_base: 500,
+                mapping_quality: 255,
+                sam_field: Vec::new(),
+                position: (0, 50),
             }
-        }; 
+        };
     }
 
     #[test]

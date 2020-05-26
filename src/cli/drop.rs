@@ -21,46 +21,49 @@ SOFTWARE.
  */
 
 /* project use */
-use io;
-use filter;
+use crate::filter;
+use crate::io;
 
-use cli::Filters;
+use crate::cli::Filters;
 
 pub struct Drop {
-    filters: Vec<Box<filter::Filter>>,
+    filters: Vec<Box<dyn filter::Filter>>,
     internal_threshold: f64,
 }
 
 impl Drop {
-    pub fn new(internal_match: f64, matches: &std::collections::HashMap<String, clap::ArgMatches>) -> Self {
+    pub fn new(
+        internal_match: f64,
+        matches: &std::collections::HashMap<String, clap::ArgMatches>,
+    ) -> Self {
         let filters = Vec::new();
         let mut d = Drop {
-            filters: filters,
+            filters,
             internal_threshold: internal_match,
         };
 
         if let Some(drop) = matches.get("drop") {
             d.generate(drop);
         }
-        
-        return d;
+
+        d
     }
 }
 
 impl Filters for Drop {
-    fn pass(&self, r: &io::MappingRecord) -> bool {
-        return if self.filters.is_empty() {
+    fn pass(&self, r: &dyn io::MappingRecord) -> bool {
+        if self.filters.is_empty() {
             true
         } else {
             !self.filters.iter().any(|ref x| x.run(r))
-        };
+        }
     }
-    
+
     fn internal_match(&self) -> f64 {
         self.internal_threshold
     }
-    
-    fn add_filter(&mut self, f: Box<filter::Filter>) {
+
+    fn add_filter(&mut self, f: Box<dyn filter::Filter>) {
         self.filters.push(f);
     }
 }

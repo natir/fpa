@@ -23,14 +23,10 @@ SOFTWARE.
 /* std use */
 use std::collections::HashMap;
 
-/* crate use */
-use csv;
-
 /* project use */
-use io;
-use type_def::WorkOnWichPart;
-use generator;
-
+use crate::generator;
+use crate::io;
+use crate::type_def::WorkOnWichPart;
 
 pub struct Indexing {
     index_type: WorkOnWichPart,
@@ -55,63 +51,83 @@ impl Indexing {
         }
     }
 
-    fn run_both(self: &mut Self, r: &mut io::MappingRecord) {
+    fn run_both(self: &mut Self, r: &mut dyn io::MappingRecord) {
         if r.read_a() == r.read_b() {
-            self.index_table.entry(r.read_a()).or_insert(Vec::new()).push(r.position());
+            self.index_table
+                .entry(r.read_a())
+                .or_insert_with(Vec::new)
+                .push(r.position());
         } else {
-            self.index_table.entry(r.read_a()).or_insert(Vec::new()).push(r.position());
-            self.index_table.entry(r.read_b()).or_insert(Vec::new()).push(r.position());
-        }        
+            self.index_table
+                .entry(r.read_a())
+                .or_insert_with(Vec::new)
+                .push(r.position());
+            self.index_table
+                .entry(r.read_b())
+                .or_insert_with(Vec::new)
+                .push(r.position());
+        }
     }
 
-    fn run_query(self: &mut Self, r: &mut io::MappingRecord) {
-        self.index_table.entry(r.read_a()).or_insert(Vec::new()).push(r.position());
+    fn run_query(self: &mut Self, r: &mut dyn io::MappingRecord) {
+        self.index_table
+            .entry(r.read_a())
+            .or_insert_with(Vec::new)
+            .push(r.position());
     }
 
-    fn run_target(self: &mut Self, r: &mut io::MappingRecord) {
-        self.index_table.entry(r.read_b()).or_insert(Vec::new()).push(r.position());
+    fn run_target(self: &mut Self, r: &mut dyn io::MappingRecord) {
+        self.index_table
+            .entry(r.read_b())
+            .or_insert_with(Vec::new)
+            .push(r.position());
     }
 }
 
 impl generator::Modifier for Indexing {
-    fn run(self: &mut Self, r: &mut io::MappingRecord) {
-        if self.file_index_path == "".to_string() {
-            return ;
+    fn run(self: &mut Self, r: &mut dyn io::MappingRecord) {
+        if self.file_index_path == "" {
+            return;
         }
-        
+
         match self.index_type {
             WorkOnWichPart::Both => self.run_both(r),
             WorkOnWichPart::Query => self.run_query(r),
             WorkOnWichPart::Target => self.run_target(r),
         }
     }
-    
+
     fn write(self: &mut Self) {
-        if self.file_index_path == "".to_string() {
-            return ;
+        if self.file_index_path == "" {
+            return;
         }
 
-        let mut writer = csv::Writer::from_path(&self.file_index_path).expect("Can't create file to write index");
+        let mut writer = csv::Writer::from_path(&self.file_index_path)
+            .expect("Can't create file to write index");
 
-        for (key, val) in &self.index_table {            
+        for (key, val) in &self.index_table {
             let mut iterator = val.iter();
-            let mut position = iterator.next().unwrap().clone();
-            
+            let mut position = *iterator.next().unwrap();
+
             let mut positions: Vec<(u64, u64)> = Vec::new();
             for v in iterator {
-
                 if v.0 - position.1 > 1 {
                     positions.push(position);
-                    position = v.clone();
-                } 
-                else {
+                    position = *v;
+                } else {
                     position.1 = v.1;
                 }
             }
             positions.push(position);
 
-            let positions_str = positions.iter().map(|x| x.0.to_string() + ":" + &x.1.to_string()).collect::<Vec<String>>().join(";");
-            writer.write_record(&[key, &positions_str]).expect("Error durring write index file");
+            let positions_str = positions
+                .iter()
+                .map(|x| x.0.to_string() + ":" + &x.1.to_string())
+                .collect::<Vec<String>>()
+                .join(";");
+            writer
+                .write_record(&[key, &positions_str])
+                .expect("Error durring write index file");
         }
     }
 }
