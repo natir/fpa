@@ -204,6 +204,7 @@ pub fn get_gfa<'a, 'b>() -> clap::App<'a, 'b> {
             Arg::with_name("output")
                 .short("o")
                 .long("output")
+		.required(true)
                 .takes_value(true)
                 .help(
                     "Write mapping passing filter in gfa1 graph format in path passed as parameter",

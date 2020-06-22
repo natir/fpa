@@ -53,7 +53,7 @@ impl generator::Modifier for Gfa1 {
     }
 
     fn write(self: &mut Self) {
-        let mut writer = std::fs::File::create(&self.gfa_path).unwrap();
+        let mut writer = std::io::BufWriter::new(std::fs::File::create(&self.gfa_path).expect("Can't create gfa ou"));
         self.gfa_object.write(&mut writer);
     }
 }
