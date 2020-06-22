@@ -41,10 +41,7 @@ use io::MappingRecord;
 
 fn main() {
     let mut app = cli::app();
-    let matches = match app.get_matches_from_safe_borrow(std::env::args()) {
-        Ok(x) => x,
-        Err(x) => x.exit(),
-    };
+    let matches = app.try_get_matches_from_mut(std::env::args()).unwrap_or_else(|e| e.exit());
 
     let subcmd = cli::get_subcmd(&mut app);
 
@@ -87,7 +84,7 @@ fn paf<'a>(
     input: Box<dyn std::io::Read>,
     output: std::io::BufWriter<Box<dyn std::io::Write>>,
     internal_match_threshold: f64,
-    subcmd: std::collections::HashMap<String, clap::ArgMatches<'a>>,
+    subcmd: std::collections::HashMap<String, clap::ArgMatches>,
 ) {
     let mut writer = io::paf::Writer::new(output);
     let mut reader = io::paf::Reader::new(input);
@@ -140,7 +137,7 @@ fn m4<'a>(
     input: Box<dyn std::io::Read>,
     output: std::io::BufWriter<Box<dyn std::io::Write>>,
     internal_match_threshold: f64,
-    subcmd: std::collections::HashMap<String, clap::ArgMatches<'a>>,
+    subcmd: std::collections::HashMap<String, clap::ArgMatches>,
 ) {
     let mut writer = io::m4::Writer::new(output);
     let mut reader = io::m4::Reader::new(input);

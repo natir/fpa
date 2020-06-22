@@ -40,42 +40,42 @@ pub use self::modifier::*;
 /* crates use */
 use clap::{App, Arg, ArgMatches};
 
-pub fn app<'a, 'b>() -> App<'a, 'b> {
+pub fn app<'a>() -> App<'a> {
     App::new("fpa")
         .version("0.5.1 Sandslash")
         .author("Pierre Marijon <pierre.marijon@inria.fr>")
         .about("fpa take long read mapping information and filter them")
         .arg(Arg::with_name("input")
-             .short("i")
+             .short('i')
              .long("input")
              .default_value("-")
-             .help("Path to input file, use '-' for stdin")
+             .about("Path to input file, use '-' for stdin")
         )
         .arg(Arg::with_name("output")
-             .short("o")
+             .short('o')
              .long("output")
              .default_value("-")
-             .help("Path to output file, use '-' for stdout")
+             .about("Path to output file, use '-' for stdout")
         )
 
         .arg(Arg::with_name("internal-match-threshold")
              .takes_value(true)
              .long("internal-threshold")
              .default_value("0.8")
-             .help("A match is internal match if overhang length > match length * internal threshold this option set internal match")
+             .about("A match is internal match if overhang length > match length * internal threshold this option set internal match")
         )
         .arg(Arg::with_name("compression-out")
-             .short("z")
+             .short('z')
              .takes_value(true)
              .long("compression-out")
              .possible_values(&["gzip", "bzip2", "lzma", "no"])
-             .help("Output compression format, the input compression format is chosen by default")
+             .about("Output compression format, the input compression format is chosen by default")
         )
         .arg(Arg::with_name("format")
-             .short("F")
+             .short('F')
              .long("format")
              .takes_value(true)
-             .help("Force the format used")
+             .about("Force the format used")
              .possible_values(&["paf", "m4"])
         )
         .subcommand(subcommand::get_keep())
@@ -85,9 +85,9 @@ pub fn app<'a, 'b>() -> App<'a, 'b> {
         .subcommand(subcommand::get_gfa())
 }
 
-pub fn get_subcmd<'a, 'b>(
-    app: &mut App<'a, 'b>,
-) -> std::collections::HashMap<String, ArgMatches<'a>> {
+pub fn get_subcmd<'a>(
+    app: &mut App<'a>,
+) -> std::collections::HashMap<String, ArgMatches> {
     let basic_cli = vec![
         "fpa".to_string(),
         "-i".to_string(),
@@ -100,11 +100,8 @@ pub fn get_subcmd<'a, 'b>(
     let mut cli: Vec<String> = std::env::args().collect();
     loop {
         /* parse cli */
-        let matches = match app.get_matches_from_safe_borrow(cli) {
-            Ok(x) => x,
-            Err(x) => x.exit(),
-        };
-
+        let matches = app.try_get_matches_from_mut(cli).unwrap_or_else(|e| e.exit());
+	
         let (name, sub) = match matches.subcommand() {
             (n, Some(s)) => (n, s),
             (_, None) => break,
