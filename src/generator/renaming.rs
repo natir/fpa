@@ -69,7 +69,7 @@ impl Renaming {
         }
     }
 
-    fn run_index(self: &Self, r: &mut dyn io::MappingRecord) {
+    fn run_index(&self, r: &mut dyn io::MappingRecord) {
         if self.rename_table.contains_key(&r.read_a()) {
             let key = r.read_a();
             r.set_read_a(self.rename_table.get(&key).unwrap().to_string());
@@ -81,7 +81,7 @@ impl Renaming {
         }
     }
 
-    fn run_no_index(self: &mut Self, r: &mut dyn io::MappingRecord) {
+    fn run_no_index(&mut self, r: &mut dyn io::MappingRecord) {
         let mut key = r.read_a();
         if !self.rename_table.contains_key(&key) {
             self.rename_table.insert(r.read_a(), self.index.to_string());
@@ -100,7 +100,7 @@ impl Renaming {
 }
 
 impl generator::Modifier for Renaming {
-    fn run(self: &mut Self, r: &mut dyn io::MappingRecord) {
+    fn run(&mut self, r: &mut dyn io::MappingRecord) {
         if self.index_mode {
             self.run_no_index(r);
         } else {
@@ -108,7 +108,7 @@ impl generator::Modifier for Renaming {
         }
     }
 
-    fn write(self: &mut Self) {
+    fn write(&mut self) {
         if self.index != 0 {
             let mut writer = csv::Writer::from_path(&self.file_rename_path)
                 .expect("Can't create file to write renaming file");

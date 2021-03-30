@@ -23,7 +23,7 @@ SOFTWARE.
 use crate::io;
 
 pub trait Filter {
-    fn run(self: &Self, r: &dyn io::MappingRecord) -> bool;
+    fn run(&self, r: &dyn io::MappingRecord) -> bool;
 }
 
 pub mod length;

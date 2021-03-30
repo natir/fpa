@@ -88,7 +88,7 @@ fpa can generate an overlap graph with overlap pass filters
 
 ## Requirements
 
-- [Rust](https://www.rust-lang.org/) >= 1.32
+- [Rust](https://www.rust-lang.org/)
 - libgz
 - libbzip2
 - liblzma
@@ -127,7 +127,7 @@ cargo install
 
 ## Minimum supported Rust version
 
-Currently the minimum supported Rust version is 1.32.0.
+Currently the minimum supported Rust version is 1.50.0.
 
 ## Citation
 

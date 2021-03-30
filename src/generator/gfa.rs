@@ -48,12 +48,14 @@ impl Gfa1 {
 }
 
 impl generator::Modifier for Gfa1 {
-    fn run(self: &mut Self, r: &mut dyn io::MappingRecord) {
+    fn run(&mut self, r: &mut dyn io::MappingRecord) {
         self.gfa_object.add(r);
     }
 
-    fn write(self: &mut Self) {
-        let mut writer = std::io::BufWriter::new(std::fs::File::create(&self.gfa_path).expect("Can't create gfa ou"));
+    fn write(&mut self) {
+        let mut writer = std::io::BufWriter::new(
+            std::fs::File::create(&self.gfa_path).expect("Can't create gfa ou"),
+        );
         self.gfa_object.write(&mut writer);
     }
 }

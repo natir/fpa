@@ -25,8 +25,6 @@ use crate::io;
 
 /* standard use */
 use std::cmp::min;
-use std::fs;
-use std::path::Path;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Record {
@@ -46,23 +44,23 @@ pub struct Record {
 }
 
 impl io::MappingRecord for Record {
-    fn read_a(self: &Self) -> String {
+    fn read_a(&self) -> String {
         self.read_a.clone()
     }
 
-    fn length_a(self: &Self) -> u64 {
+    fn length_a(&self) -> u64 {
         self.length_a
     }
 
-    fn begin_a(self: &Self) -> u64 {
+    fn begin_a(&self) -> u64 {
         self.begin_a
     }
 
-    fn end_a(self: &Self) -> u64 {
+    fn end_a(&self) -> u64 {
         self.end_a
     }
 
-    fn strand(self: &Self) -> char {
+    fn strand(&self) -> char {
         if self.strand_a == self.strand_b {
             '+'
         } else {
@@ -70,45 +68,45 @@ impl io::MappingRecord for Record {
         }
     }
 
-    fn read_b(self: &Self) -> String {
+    fn read_b(&self) -> String {
         self.read_b.clone()
     }
 
-    fn length_b(self: &Self) -> u64 {
+    fn length_b(&self) -> u64 {
         self.length_b
     }
 
-    fn begin_b(self: &Self) -> u64 {
+    fn begin_b(&self) -> u64 {
         self.begin_b
     }
 
-    fn end_b(self: &Self) -> u64 {
+    fn end_b(&self) -> u64 {
         self.end_b
     }
 
-    fn position(self: &Self) -> (u64, u64) {
+    fn position(&self) -> (u64, u64) {
         self.position
     }
 
-    fn set_position(self: &mut Self, p: (u64, u64)) {
+    fn set_position(&mut self, p: (u64, u64)) {
         self.position = p;
     }
 
-    fn length(self: &Self) -> u64 {
+    fn length(&self) -> u64 {
         min(self.end_a - self.begin_a, self.end_b - self.begin_b)
     }
 
-    fn len_to_end_a(self: &Self) -> u64 {
+    fn len_to_end_a(&self) -> u64 {
         self.length_a - self.end_a
     }
-    fn len_to_end_b(self: &Self) -> u64 {
+    fn len_to_end_b(&self) -> u64 {
         self.length_b - self.end_b
     }
 
-    fn set_read_a(self: &mut Self, new_name: String) {
+    fn set_read_a(&mut self, new_name: String) {
         self.read_a = new_name;
     }
-    fn set_read_b(self: &mut Self, new_name: String) {
+    fn set_read_b(&mut self, new_name: String) {
         self.read_b = new_name;
     }
 }
@@ -202,14 +200,6 @@ impl<R: std::io::Read> Reader<R> {
 #[derive(Debug)]
 pub struct Writer<W: std::io::Write> {
     inner: csv::Writer<W>,
-}
-
-impl Writer<fs::File> {
-    /// Write to a given file path in given format.
-    #[allow(dead_code)]
-    pub fn to_file<P: AsRef<Path>>(path: P) -> std::io::Result<Self> {
-        fs::File::create(path).map(Writer::new)
-    }
 }
 
 impl<W: std::io::Write> Writer<W> {
@@ -323,7 +313,7 @@ mod test {
                 .ok()
                 .expect("Error writing record");
         }
-	
-	assert_eq!(writer.inner.into_inner().unwrap(), M4_FILE);
+
+        assert_eq!(writer.inner.into_inner().unwrap(), M4_FILE);
     }
 }

@@ -37,15 +37,23 @@ impl Containment {
 }
 
 impl filter::Filter for Containment {
-    fn run(self: &Self, r: &dyn io::MappingRecord) -> bool {
-	if filter::InternalMatch::new(self.internal_threshold).run(r) {
-	    return false
-	}
+    fn run(&self, r: &dyn io::MappingRecord) -> bool {
+        if filter::InternalMatch::new(self.internal_threshold).run(r) {
+            return false;
+        }
 
-	(r.strand() == '+' && r.begin_a() <= r.begin_b() && r.length_a() - r.end_a() < r.length_b() - r.end_b()) ||
-	    (r.strand() == '-' && r.begin_a() <= r.length_b() - r.end_b() && r.length_a() - r.end_a() < r.begin_b()) ||
-	    (r.strand() == '+' && r.begin_a() >= r.begin_b() && r.length_a() - r.end_a() > r.length_b() - r.end_b()) ||
-	    (r.strand() == '-' && r.begin_a() >= r.length_b() - r.end_b() && r.length_a() - r.end_a() > r.begin_b())
+        (r.strand() == '+'
+            && r.begin_a() <= r.begin_b()
+            && r.length_a() - r.end_a() < r.length_b() - r.end_b())
+            || (r.strand() == '-'
+                && r.begin_a() <= r.length_b() - r.end_b()
+                && r.length_a() - r.end_a() < r.begin_b())
+            || (r.strand() == '+'
+                && r.begin_a() >= r.begin_b()
+                && r.length_a() - r.end_a() > r.length_b() - r.end_b())
+            || (r.strand() == '-'
+                && r.begin_a() >= r.length_b() - r.end_b()
+                && r.length_a() - r.end_a() > r.begin_b())
     }
 }
 

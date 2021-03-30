@@ -39,7 +39,7 @@ impl Length {
 }
 
 impl filter::Filter for Length {
-    fn run(self: &Self, r: &dyn io::MappingRecord) -> bool {
+    fn run(&self, r: &dyn io::MappingRecord) -> bool {
         r.length().cmp(&self.length_threshold) == self.ordering
     }
 }

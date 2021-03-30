@@ -18,7 +18,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*/
+ */
 
 /* std use */
 use std::clone::Clone;
@@ -62,7 +62,7 @@ impl Gfa1 {
         }
     }
 
-    pub fn add(self: &mut Self, record: &dyn io::MappingRecord) {
+    pub fn add(&mut self, record: &dyn io::MappingRecord) {
         if self.test_internalmatch.run(&*record) {
             self.add_internalmatch(record);
         } else if self.test_containment.run(&*record) {
@@ -72,7 +72,7 @@ impl Gfa1 {
         }
     }
 
-    fn add_containment(self: &mut Self, record: &dyn io::MappingRecord) {
+    fn add_containment(&mut self, record: &dyn io::MappingRecord) {
         if record.strand() == '+' {
             if record.begin_a() <= record.begin_b() && record.len_to_end_a() < record.len_to_end_b()
             {
@@ -114,57 +114,56 @@ impl Gfa1 {
                     record.read_b()
                 );
             }
-        } else {
-            if record.begin_a() <= record.len_to_end_b() && record.len_to_end_a() < record.begin_b()
-            {
-                // B contain A
-                self.containments.insert(
-                    (record.read_a(), record.length_a()),
-                    (
-                        record.read_b(),
-                        '+',
-                        record.length_b(),
-                        record.read_a(),
-                        '-',
-                        record.length_a(),
-                        record.begin_b(),
-                        record.length(),
-                    ),
-                );
-            } else if record.begin_a() >= record.len_to_end_b()
-                && record.len_to_end_a() > record.begin_b()
-            {
-                // A contain B
-                self.containments.insert(
-                    (record.read_b(), record.length_b()),
-                    (
-                        record.read_a(),
-                        '+',
-                        record.length_a(),
-                        record.read_b(),
-                        '-',
-                        record.length_b(),
-                        record.begin_a(),
-                        record.length(),
-                    ),
-                );
-            } else {
-                println!(
-                    "Containment Record not managed {:?} {:?}",
+        } else if record.begin_a() <= record.len_to_end_b()
+            && record.len_to_end_a() < record.begin_b()
+        {
+            // B contain A
+            self.containments.insert(
+                (record.read_a(), record.length_a()),
+                (
+                    record.read_b(),
+                    '+',
+                    record.length_b(),
                     record.read_a(),
-                    record.read_b()
-                );
-            }
+                    '-',
+                    record.length_a(),
+                    record.begin_b(),
+                    record.length(),
+                ),
+            );
+        } else if record.begin_a() >= record.len_to_end_b()
+            && record.len_to_end_a() > record.begin_b()
+        {
+            // A contain B
+            self.containments.insert(
+                (record.read_b(), record.length_b()),
+                (
+                    record.read_a(),
+                    '+',
+                    record.length_a(),
+                    record.read_b(),
+                    '-',
+                    record.length_b(),
+                    record.begin_a(),
+                    record.length(),
+                ),
+            );
+        } else {
+            println!(
+                "Containment Record not managed {:?} {:?}",
+                record.read_a(),
+                record.read_b()
+            );
         }
     }
 
-    fn add_internalmatch(self: &mut Self, record: &dyn io::MappingRecord) {
+    fn add_internalmatch(&mut self, record: &dyn io::MappingRecord) {
         if self.keep_internal {
             self.add_dovetails(record);
         }
     }
 
-    fn add_dovetails(self: &mut Self, record: &dyn io::MappingRecord) {
+    fn add_dovetails(&mut self, record: &dyn io::MappingRecord) {
         let node_a = self.add_node((record.read_a(), record.length_a()));
         let node_b = self.add_node((record.read_b(), record.length_b()));
 
@@ -184,44 +183,40 @@ impl Gfa1 {
                     (record.read_b(), '+', record.read_a(), '+', record.length()),
                 );
             }
-        } else {
-            if record.begin_a() > record.len_to_end_a() {
-                if record.begin_a() > record.len_to_end_b() {
-                    // A overlap B
-                    self.add_edge(
-                        node_a,
-                        node_b,
-                        (record.read_a(), '+', record.read_b(), '-', record.length()),
-                    );
-                } else {
-                    // B overlap Af
-                    self.add_edge(
-                        node_b,
-                        node_a,
-                        (record.read_b(), '+', record.read_a(), '-', record.length()),
-                    );
-                }
+        } else if record.begin_a() > record.len_to_end_a() {
+            if record.begin_a() > record.len_to_end_b() {
+                // A overlap B
+                self.add_edge(
+                    node_a,
+                    node_b,
+                    (record.read_a(), '+', record.read_b(), '-', record.length()),
+                );
             } else {
-                if (record.length_a() - record.begin_a()) > record.end_b() {
-                    // A overlap B
-                    self.add_edge(
-                        node_a,
-                        node_b,
-                        (record.read_a(), '-', record.read_b(), '+', record.length()),
-                    );
-                } else {
-                    // B overlap A
-                    self.add_edge(
-                        node_b,
-                        node_a,
-                        (record.read_b(), '-', record.read_a(), '+', record.length()),
-                    );
-                }
+                // B overlap Af
+                self.add_edge(
+                    node_b,
+                    node_a,
+                    (record.read_b(), '+', record.read_a(), '-', record.length()),
+                );
             }
+        } else if (record.length_a() - record.begin_a()) > record.end_b() {
+            // A overlap B
+            self.add_edge(
+                node_a,
+                node_b,
+                (record.read_a(), '-', record.read_b(), '+', record.length()),
+            );
+        } else {
+            // B overlap A
+            self.add_edge(
+                node_b,
+                node_a,
+                (record.read_b(), '-', record.read_a(), '+', record.length()),
+            );
         }
     }
 
-    pub fn write<W: std::io::Write>(self: &mut Self, writer: &mut W) {
+    pub fn write<W: std::io::Write>(&mut self, writer: &mut W) {
         if !self.keep_containment {
             let remove_key: Vec<((String, u64), ContainmentType)> =
                 self.containments.drain().collect();
@@ -289,17 +284,15 @@ impl Gfa1 {
         }
     }
 
-    fn add_node(self: &mut Self, node: (String, u64)) -> petgraph::graph::NodeIndex {
-	if self.node2index.contains_key(&node) {
-            *self.node2index.get(&node).expect("Impossible")
-        } else {
-            let index = self.graph.add_node(node.clone());
-            self.node2index.insert(node, index);
-            index
-        }
+    fn add_node(&mut self, node: (String, u64)) -> petgraph::graph::NodeIndex {
+        let graph = &mut self.graph;
+        *self
+            .node2index
+            .entry(node)
+            .or_insert_with_key(|n| graph.add_node(n.clone()))
     }
 
-    fn add_edge(self: &mut Self, node_a: NodeIndex, node_b: NodeIndex, new_edge: LineType) {
+    fn add_edge(&mut self, node_a: NodeIndex, node_b: NodeIndex, new_edge: LineType) {
         if let Some(e) = self.graph.find_edge(node_a, node_b) {
             if self.graph.edge_weight(e).unwrap().4 < new_edge.4 {
                 self.graph.update_edge(node_a, node_b, new_edge);

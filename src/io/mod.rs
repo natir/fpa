@@ -25,25 +25,25 @@ pub mod m4;
 pub mod paf;
 
 pub trait MappingRecord {
-    fn read_a(self: &Self) -> String;
-    fn length_a(self: &Self) -> u64;
-    fn begin_a(self: &Self) -> u64;
-    fn end_a(self: &Self) -> u64;
-    fn strand(self: &Self) -> char;
-    fn read_b(self: &Self) -> String;
-    fn length_b(self: &Self) -> u64;
-    fn begin_b(self: &Self) -> u64;
-    fn end_b(self: &Self) -> u64;
-    fn position(self: &Self) -> (u64, u64);
-    fn set_position(self: &mut Self, p: (u64, u64));
+    fn read_a(&self) -> String;
+    fn length_a(&self) -> u64;
+    fn begin_a(&self) -> u64;
+    fn end_a(&self) -> u64;
+    fn strand(&self) -> char;
+    fn read_b(&self) -> String;
+    fn length_b(&self) -> u64;
+    fn begin_b(&self) -> u64;
+    fn end_b(&self) -> u64;
+    fn position(&self) -> (u64, u64);
+    fn set_position(&mut self, p: (u64, u64));
 
-    fn length(self: &Self) -> u64;
+    fn length(&self) -> u64;
 
-    fn len_to_end_a(self: &Self) -> u64;
-    fn len_to_end_b(self: &Self) -> u64;
+    fn len_to_end_a(&self) -> u64;
+    fn len_to_end_b(&self) -> u64;
 
-    fn set_read_a(self: &mut Self, new_name: String);
-    fn set_read_b(self: &mut Self, new_name: String);
+    fn set_read_a(&mut self, new_name: String);
+    fn set_read_b(&mut self, new_name: String);
 }
 
 pub enum MappingFormat {

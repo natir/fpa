@@ -45,33 +45,33 @@ pub fn app<'a>() -> App<'a> {
         .version("0.5.1 Sandslash")
         .author("Pierre Marijon <pierre.marijon@inria.fr>")
         .about("fpa take long read mapping information and filter them")
-        .arg(Arg::with_name("input")
+        .arg(Arg::new("input")
              .short('i')
              .long("input")
              .default_value("-")
              .about("Path to input file, use '-' for stdin")
         )
-        .arg(Arg::with_name("output")
+        .arg(Arg::new("output")
              .short('o')
              .long("output")
              .default_value("-")
              .about("Path to output file, use '-' for stdout")
         )
 
-        .arg(Arg::with_name("internal-match-threshold")
+        .arg(Arg::new("internal-match-threshold")
              .takes_value(true)
              .long("internal-threshold")
              .default_value("0.8")
              .about("A match is internal match if overhang length > match length * internal threshold this option set internal match")
         )
-        .arg(Arg::with_name("compression-out")
+        .arg(Arg::new("compression-out")
              .short('z')
              .takes_value(true)
              .long("compression-out")
              .possible_values(&["gzip", "bzip2", "lzma", "no"])
              .about("Output compression format, the input compression format is chosen by default")
         )
-        .arg(Arg::with_name("format")
+        .arg(Arg::new("format")
              .short('F')
              .long("format")
              .takes_value(true)
@@ -85,9 +85,7 @@ pub fn app<'a>() -> App<'a> {
         .subcommand(subcommand::get_gfa())
 }
 
-pub fn get_subcmd<'a>(
-    app: &mut App<'a>,
-) -> std::collections::HashMap<String, ArgMatches> {
+pub fn get_subcmd(app: &mut App) -> std::collections::HashMap<String, ArgMatches> {
     let basic_cli = vec![
         "fpa".to_string(),
         "-i".to_string(),
@@ -100,18 +98,20 @@ pub fn get_subcmd<'a>(
     let mut cli: Vec<String> = std::env::args().collect();
     loop {
         /* parse cli */
-        let matches = app.try_get_matches_from_mut(cli).unwrap_or_else(|e| e.exit());
-	
+        let matches = app
+            .try_get_matches_from_mut(cli)
+            .unwrap_or_else(|e| e.exit());
+
         let (name, sub) = match matches.subcommand() {
-            (n, Some(s)) => (n, s),
-            (_, None) => break,
+            Some((n, s)) => (n, s),
+            None => break,
         };
 
         sub2matches.insert(name.to_string(), sub.clone());
 
         let (subname, subsub) = match sub.subcommand() {
-            (n, Some(s)) => (n, s),
-            (_, None) => break,
+            Some((n, s)) => (n, s),
+            None => break,
         };
 
         if subsub.values_of("").is_none() {

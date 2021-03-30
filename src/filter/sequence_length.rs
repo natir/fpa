@@ -39,9 +39,9 @@ impl SequenceLength {
 }
 
 impl filter::Filter for SequenceLength {
-    fn run(self: &Self, r: &dyn io::MappingRecord) -> bool {
+    fn run(&self, r: &dyn io::MappingRecord) -> bool {
         r.length_a().cmp(&self.length_threshold) == self.ordering
-	    || r.length_b().cmp(&self.length_threshold) == self.ordering
+            || r.length_b().cmp(&self.length_threshold) == self.ordering
     }
 }
 

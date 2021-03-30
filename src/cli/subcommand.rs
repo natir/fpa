@@ -28,59 +28,59 @@ pub fn get_keep<'a>() -> App<'a> {
         .setting(clap::AppSettings::AllowExternalSubcommands)
         .about("fpa keep only mapping match this constraints")
         .arg(
-            Arg::with_name("containment")
+            Arg::new("containment")
                 .short('c')
                 .long("containment")
                 .about("Keep only containment mapping"),
         )
         .arg(
-            Arg::with_name("internalmatch")
+            Arg::new("internalmatch")
                 .short('i')
                 .long("internalmatch")
                 .about("Keep only internal mapping"),
         )
         .arg(
-            Arg::with_name("dovetail")
+            Arg::new("dovetail")
                 .short('d')
                 .long("dovetail")
                 .about("Keep only dovetail mapping"),
         )
         .arg(
-            Arg::with_name("length_lower")
+            Arg::new("length_lower")
                 .short('l')
                 .long("length-lower")
                 .takes_value(true)
                 .about("Keep only mapping with length lower than value"),
         )
         .arg(
-            Arg::with_name("length_upper")
+            Arg::new("length_upper")
                 .short('L')
                 .long("length-upper")
                 .takes_value(true)
                 .about("Keep only mapping with length upper than value"),
         )
         .arg(
-            Arg::with_name("name_match")
+            Arg::new("name_match")
                 .short('n')
                 .long("name-match")
                 .takes_value(true)
                 .about("Keep only mapping where one reads match with regex"),
         )
         .arg(
-            Arg::with_name("same_name")
+            Arg::new("same_name")
                 .short('m')
                 .long("same-name")
                 .about("Keep only mapping where reads have same name"),
         )
         .arg(
-            Arg::with_name("sequence_length_lower")
+            Arg::new("sequence_length_lower")
                 .short('s')
                 .long("sequence-length-lower")
                 .takes_value(true)
                 .about("Keep only mapping where one reads have length lower than value"),
         )
         .arg(
-            Arg::with_name("sequence_length_upper")
+            Arg::new("sequence_length_upper")
                 .short('S')
                 .long("sequence-length-upper")
                 .takes_value(true)
@@ -93,59 +93,59 @@ pub fn get_drop<'a>() -> clap::App<'a> {
         .setting(clap::AppSettings::AllowExternalSubcommands)
         .about("fpa drop mapping match this constraints")
         .arg(
-            Arg::with_name("containment")
+            Arg::new("containment")
                 .short('c')
                 .long("containment")
                 .about("Drop containment mapping"),
         )
         .arg(
-            Arg::with_name("internalmatch")
+            Arg::new("internalmatch")
                 .short('i')
                 .long("internalmatch")
                 .about("Drop internal mapping"),
         )
         .arg(
-            Arg::with_name("dovetail")
+            Arg::new("dovetail")
                 .short('d')
                 .long("dovetail")
                 .about("Drop dovetail mapping"),
         )
         .arg(
-            Arg::with_name("length_lower")
+            Arg::new("length_lower")
                 .short('l')
                 .long("length-lower")
                 .takes_value(true)
                 .about("Drop mapping with length lower than value"),
         )
         .arg(
-            Arg::with_name("length_upper")
+            Arg::new("length_upper")
                 .short('L')
                 .long("length-upper")
                 .takes_value(true)
                 .about("Drop mapping with length upper than value"),
         )
         .arg(
-            Arg::with_name("name_match")
+            Arg::new("name_match")
                 .short('n')
                 .long("name-match")
                 .takes_value(true)
                 .about("Drop mapping where one reads match with regex"),
         )
         .arg(
-            Arg::with_name("same_name")
+            Arg::new("same_name")
                 .short('m')
                 .long("same-name")
                 .about("Drop mapping where reads have same name"),
         )
         .arg(
-            Arg::with_name("sequence_length_lower")
+            Arg::new("sequence_length_lower")
                 .short('s')
                 .long("sequence-length-lower")
                 .takes_value(true)
                 .about("Drop mapping where one reads have length lower than value"),
         )
         .arg(
-            Arg::with_name("sequence_length_upper")
+            Arg::new("sequence_length_upper")
                 .short('S')
                 .long("sequence-length-upper")
                 .takes_value(true)
@@ -158,14 +158,14 @@ pub fn get_rename<'a>() -> clap::App<'a> {
         .setting(clap::AppSettings::AllowExternalSubcommands)
         .about("fpa rename reads with name you chose or with incremental counter")
         .arg(
-            Arg::with_name("input")
+            Arg::new("input")
                 .short('i')
                 .long("input")
                 .takes_value(true)
                 .about("Rename reads with value in path passed as parameter"),
         )
         .arg(
-            Arg::with_name("output")
+            Arg::new("output")
                 .short('o')
                 .long("output")
                 .takes_value(true)
@@ -178,7 +178,7 @@ pub fn get_index<'a>() -> clap::App<'a> {
         .setting(clap::AppSettings::AllowExternalSubcommands)
         .about("fpa generate a index of mapping passing filter")
         .arg(
-            Arg::with_name("filename")
+            Arg::new("filename")
                 .short('f')
                 .long("filename")
                 .takes_value(true)
@@ -186,13 +186,15 @@ pub fn get_index<'a>() -> clap::App<'a> {
                 .about("Write index of mapping passing filter in path passed as parameter"),
         )
         .arg(
-            Arg::with_name("type")
+            Arg::new("type")
                 .short('t')
                 .long("type")
                 .takes_value(true)
                 .default_value("both")
                 .possible_values(&["query", "target", "both"])
-                .about("Type of index, only reference read when it's query, target or both of them"),
+                .about(
+                    "Type of index, only reference read when it's query, target or both of them",
+                ),
         )
 }
 
@@ -201,23 +203,23 @@ pub fn get_gfa<'a>() -> clap::App<'a> {
         .setting(clap::AppSettings::AllowExternalSubcommands)
         .about("fpa generate a overlap graph in gfa1 format with mapping passing filter")
         .arg(
-            Arg::with_name("output")
+            Arg::new("output")
                 .short('o')
                 .long("output")
-		.required(true)
+                .required(true)
                 .takes_value(true)
-		.about(
+                .about(
                     "Write mapping passing filter in gfa1 graph format in path passed as parameter",
                 ),
         )
         .arg(
-            Arg::with_name("containment")
+            Arg::new("containment")
                 .short('c')
                 .long("containment")
                 .about("Keep containment overlap"),
         )
         .arg(
-            Arg::with_name("internalmatch")
+            Arg::new("internalmatch")
                 .short('i')
                 .long("internalmatch")
                 .about("Keep internal match overlap"),

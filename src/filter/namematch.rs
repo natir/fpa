@@ -39,7 +39,7 @@ impl NameMatch {
 }
 
 impl filter::Filter for NameMatch {
-    fn run(self: &Self, r: &dyn io::MappingRecord) -> bool {
+    fn run(&self, r: &dyn io::MappingRecord) -> bool {
         self.regex.is_match(&r.read_a()) || self.regex.is_match(&r.read_b())
     }
 }

@@ -41,7 +41,9 @@ use io::MappingRecord;
 
 fn main() {
     let mut app = cli::app();
-    let matches = app.try_get_matches_from_mut(std::env::args()).unwrap_or_else(|e| e.exit());
+    let matches = app
+        .try_get_matches_from_mut(std::env::args())
+        .unwrap_or_else(|e| e.exit());
 
     let subcmd = cli::get_subcmd(&mut app);
 
@@ -80,7 +82,7 @@ fn main() {
     }
 }
 
-fn paf<'a>(
+fn paf(
     input: Box<dyn std::io::Read>,
     output: std::io::BufWriter<Box<dyn std::io::Write>>,
     internal_match_threshold: f64,
@@ -133,7 +135,7 @@ fn paf<'a>(
     index.write();
 }
 
-fn m4<'a>(
+fn m4(
     input: Box<dyn std::io::Read>,
     output: std::io::BufWriter<Box<dyn std::io::Write>>,
     internal_match_threshold: f64,

@@ -51,7 +51,7 @@ impl Indexing {
         }
     }
 
-    fn run_both(self: &mut Self, r: &mut dyn io::MappingRecord) {
+    fn run_both(&mut self, r: &mut dyn io::MappingRecord) {
         if r.read_a() == r.read_b() {
             self.index_table
                 .entry(r.read_a())
@@ -69,14 +69,14 @@ impl Indexing {
         }
     }
 
-    fn run_query(self: &mut Self, r: &mut dyn io::MappingRecord) {
+    fn run_query(&mut self, r: &mut dyn io::MappingRecord) {
         self.index_table
             .entry(r.read_a())
             .or_insert_with(Vec::new)
             .push(r.position());
     }
 
-    fn run_target(self: &mut Self, r: &mut dyn io::MappingRecord) {
+    fn run_target(&mut self, r: &mut dyn io::MappingRecord) {
         self.index_table
             .entry(r.read_b())
             .or_insert_with(Vec::new)
@@ -85,8 +85,8 @@ impl Indexing {
 }
 
 impl generator::Modifier for Indexing {
-    fn run(self: &mut Self, r: &mut dyn io::MappingRecord) {
-        if self.file_index_path == "" {
+    fn run(&mut self, r: &mut dyn io::MappingRecord) {
+        if self.file_index_path.is_empty() {
             return;
         }
 
@@ -97,8 +97,8 @@ impl generator::Modifier for Indexing {
         }
     }
 
-    fn write(self: &mut Self) {
-        if self.file_index_path == "" {
+    fn write(&mut self) {
+        if self.file_index_path.is_empty() {
             return;
         }
 

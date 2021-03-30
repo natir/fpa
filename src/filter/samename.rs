@@ -35,7 +35,7 @@ impl SameName {
 }
 
 impl filter::Filter for SameName {
-    fn run(self: &Self, r: &dyn io::MappingRecord) -> bool {
+    fn run(&self, r: &dyn io::MappingRecord) -> bool {
         r.read_a() == r.read_b()
     }
 }

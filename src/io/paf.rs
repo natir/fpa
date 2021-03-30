@@ -45,66 +45,66 @@ pub struct Record {
 }
 
 impl io::MappingRecord for Record {
-    fn read_a(self: &Self) -> String {
+    fn read_a(&self) -> String {
         self.read_a.clone()
     }
 
-    fn length_a(self: &Self) -> u64 {
+    fn length_a(&self) -> u64 {
         self.length_a
     }
 
-    fn begin_a(self: &Self) -> u64 {
+    fn begin_a(&self) -> u64 {
         self.begin_a
     }
 
-    fn end_a(self: &Self) -> u64 {
+    fn end_a(&self) -> u64 {
         self.end_a
     }
 
-    fn strand(self: &Self) -> char {
+    fn strand(&self) -> char {
         self.strand
     }
 
-    fn read_b(self: &Self) -> String {
+    fn read_b(&self) -> String {
         self.read_b.clone()
     }
 
-    fn length_b(self: &Self) -> u64 {
+    fn length_b(&self) -> u64 {
         self.length_b
     }
 
-    fn begin_b(self: &Self) -> u64 {
+    fn begin_b(&self) -> u64 {
         self.begin_b
     }
 
-    fn end_b(self: &Self) -> u64 {
+    fn end_b(&self) -> u64 {
         self.end_b
     }
 
-    fn position(self: &Self) -> (u64, u64) {
+    fn position(&self) -> (u64, u64) {
         self.position
     }
 
-    fn set_position(self: &mut Self, p: (u64, u64)) {
+    fn set_position(&mut self, p: (u64, u64)) {
         self.position = p;
     }
 
-    fn length(self: &Self) -> u64 {
+    fn length(&self) -> u64 {
         min(self.end_a - self.begin_a, self.end_b - self.begin_b)
     }
 
-    fn len_to_end_a(self: &Self) -> u64 {
+    fn len_to_end_a(&self) -> u64 {
         self.length_a - self.end_a
     }
 
-    fn len_to_end_b(self: &Self) -> u64 {
+    fn len_to_end_b(&self) -> u64 {
         self.length_b - self.end_b
     }
 
-    fn set_read_a(self: &mut Self, new_name: String) {
+    fn set_read_a(&mut self, new_name: String) {
         self.read_a = new_name;
     }
-    fn set_read_b(self: &mut Self, new_name: String) {
+    fn set_read_b(&mut self, new_name: String) {
         self.read_b = new_name;
     }
 }
@@ -154,8 +154,8 @@ impl<'a, R: std::io::Read> Iterator for Records<'a, R> {
                     let sam_field = if mapping_quality_and_sam.len() > 1 {
                         mapping_quality_and_sam[1..].to_vec()
                     } else {
-			Vec::new()
-		    };
+                        Vec::new()
+                    };
 
                     let new_position = self.inner.reader().position().byte();
                     Record {

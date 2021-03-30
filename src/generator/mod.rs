@@ -23,9 +23,9 @@ SOFTWARE.
 use crate::io;
 
 pub trait Modifier {
-    fn run(self: &mut Self, r: &mut dyn io::MappingRecord);
+    fn run(&mut self, r: &mut dyn io::MappingRecord);
 
-    fn write(self: &mut Self);
+    fn write(&mut self);
 }
 
 pub mod renaming;
