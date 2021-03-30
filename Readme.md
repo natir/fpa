@@ -1,6 +1,8 @@
-# fpa Filter Pairwise Alignment
+[![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/natir/fpa/blob/master/LICENSE)
+![CI](https://github.com/natir/fpa/workflows/CI/badge.svg)
+[![CodeCov](https://codecov.io/gh/natir/fpa/branch/master/graph/badge.svg)](https://codecov.io/gh/natir/fpa)
 
-[![Build Status](https://travis-ci.org/natir/fpa.svg?branch=master)](https://travis-ci.org/natir/fpa)
+# fpa Filter Pairwise Alignment 🧬 💻
 
 Filter output of all-against-all read mapping, you filter or select:
 
@@ -14,10 +16,16 @@ Filter output of all-against-all read mapping, you filter or select:
 
 For internal match, containment, dovetails definition go read [algorithm 5 in minimap article](https://academic.oup.com/bioinformatics/article/32/14/2103/1742895/Minimap-and-miniasm-fast-mapping-and-de-novo)
 
+- [Rationale](#rationale)
+- [Usage](#usage)
+- [Requirements](#requirements)
+- [Instalation](#instalation)
+- [Minimum supported Rust version](#minimum-supported-rust-version)
+- [Citation](#citation)
 
 ## Rationale
 
-Long Read mapping tools provides all match they found in read dataset, for many usage some of match aren't usfull, this programme provide some filter to remove it. 
+Long Read mapping tools provides all match they found in read dataset, for many usage some of match aren't useful, this programme provide some filter to remove it.
 This soft can be replace by a simple script in awk, bash, python, ~perl~, {your favorite language}.
 
 More details and some experiment are present in this [blog post](https://blog.pierre.marijon.fr/binary-mapping-format/). We have evaluated the effects of some fpa filter on miniasm assemblies, you can find scripts and how to get the real data sets in [this repository](https://gitlab.inria.fr/pmarijon/yacrd-and-fpa-upstream-tools-for-lr-genome-assembly).
@@ -116,6 +124,10 @@ cargo build
 cargo test
 cargo install
 ```
+
+## Minimum supported Rust version
+
+Currently the minimum supported Rust version is 1.32.0.
 
 ## Citation
 
