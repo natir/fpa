@@ -55,7 +55,7 @@ impl Filters for Keep {
         if self.filters.is_empty() {
             true
         } else {
-            self.filters.iter().all(|ref x| x.run(r))
+            self.filters.iter().all(|x| x.run(r))
         }
     }
 

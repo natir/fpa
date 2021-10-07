@@ -52,16 +52,11 @@ impl Indexing {
     }
 
     fn run_both(&mut self, r: &mut dyn io::MappingRecord) {
-        if r.read_a() == r.read_b() {
-            self.index_table
-                .entry(r.read_a())
-                .or_insert_with(Vec::new)
-                .push(r.position());
-        } else {
-            self.index_table
-                .entry(r.read_a())
-                .or_insert_with(Vec::new)
-                .push(r.position());
+        self.index_table
+            .entry(r.read_a())
+            .or_insert_with(Vec::new)
+            .push(r.position());
+        if r.read_a() != r.read_b() {
             self.index_table
                 .entry(r.read_b())
                 .or_insert_with(Vec::new)

@@ -55,7 +55,7 @@ impl Filters for Drop {
         if self.filters.is_empty() {
             true
         } else {
-            !self.filters.iter().any(|ref x| x.run(r))
+            !self.filters.iter().any(|x| x.run(r))
         }
     }
 
