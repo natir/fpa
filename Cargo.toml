@@ -21,7 +21,7 @@ clap           = "3.0.0-beta.2"
 regex          = "1"
 serde          = "1"
 niffler        = "2"
-petgraph       = "0.5"
+petgraph       = "0.6"
 lazy_static    = "1"
 serde_derive   = "1"
 
