@@ -49,7 +49,7 @@ minimap2 long_read.fasta long_read.fasta | fpa drop -m -n read_1 > no_self_no_ma
 minimap2 long_read.fasta long_read.fasta | fpa drop -m rename -o rename.csv > no_self_match_renamed.paf
 minimap2 long_read.fasta long_read.fasta | fpa drop -m rename -o rename.csv gfa -o no_self_match_renamed.gfa > no_self_match_renamed.paf
 minimap2 long_read.fasta long_read.fasta | fpa drop -l 500 index -t query -f match_upper_500.paf.idx query > match_upper_500.paf
-minimap2 long_read.fasta long_read.fasta | fpa -o match_upper_500.paf.bz2 -z bzip2 drop -l 500 index -f match_upper_500.paf.idx -t target 
+minimap2 long_read.fasta long_read.fasta | fpa -o match_upper_500.paf.bz2 -z bzip2 drop -l 500 index -f match_upper_500.paf.idx -t target
 ```
 
 ### Generators
@@ -72,7 +72,7 @@ If you use `-o`, the names will automatically be replaced by a number a file lik
 
 #### Index
 
-fpa can build an index of offset of the records in the file where a reads appears. 
+fpa can build an index of offset of the records in the file where a reads appears.
 
 The index file looks like this:
 ```
@@ -127,7 +127,7 @@ cargo install
 
 ## Minimum supported Rust version
 
-Currently the minimum supported Rust version is 1.50.0.
+Currently the minimum supported Rust version is 1.56.0.
 
 ## Citation
 

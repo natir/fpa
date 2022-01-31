@@ -1,0 +1,2 @@
+[toolchain]
+channel = "1.56-x86_64-unknown-linux-gnu"
